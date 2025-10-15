@@ -1,5 +1,20 @@
 # 🃏 Twenty Nine (29) — Official Rulebook
 
+## Table of Contents
+- [1. Deck & Cards](#1-deck--cards)
+- [2. Players & Teams](#2-players--teams)
+- [3. Bidding](#3-bidding)
+- [4. Trump](#4-trump)
+- [5. Trick-taking](#5-trick-taking)
+- [6. Scoring System](#6-scoring-system)
+- [7. Challenges (Double, Re-Double, Full Set, Single Hand)](#7-challenges-double-re-double-full-set-single-hand)
+- [8. Special Rules](#8-special-rules)
+- [9. Redeal Conditions](#9-redeal-conditions)
+- [10. Rule Enforcement & Penalties](#10-rule-enforcement--penalties)
+- [11. Example Round Simulation](#11-example-round-simulation)
+
+---
+
 ## 1. Deck & Cards
 - Uses **32 cards** (7 through Ace in each suit).
 - **Card ranking (high → low):** J, 9, A, 10, K, Q, 8, 7.
@@ -52,8 +67,8 @@
 
 ## 6. Scoring System
 - The bidder team’s success depends on **+6 points margin**:
-  - They must either score **6 points more than opponents**, or  
-  - Prevent opponents from reaching **-6 points**.  
+  - They must either finish with **+6 points advantage** over opponents, or  
+  - Ensure opponents fall to **-6 points**.  
 - **Round results:**
   - Winning team = **+1 point**.  
   - Losing team = **-1 point**.  
@@ -120,3 +135,86 @@ A redeal occurs if:
   - If repeated = **penalty**:  
     - If on bidder’s team → **-1 point** to their team, round ends, new round begins.  
     - If on opponent’s team → **+1 point** to bidder’s team, round ends, new round begins.  
+
+---
+
+## 11. Example Round Simulation
+
+This example shows how a full round of Twenty Nine is played, from bidding to scoring.
+
+### Setup
+- 4 players: A, B, C, D (A & C are partners, B & D are partners).
+- Each player is dealt 8 cards.
+
+### Bidding
+- Player A starts with a bid of 16.
+- Player B raises to 17.
+- Player C passes.
+- Player D raises to 18.
+- Player A raises to 19.
+- All others pass → **Player A wins the bid at 19**.
+
+### Trump
+- Player A chooses **Hearts** as trump (keeps it blind for now).
+
+### Trick-taking
+1. **Trick 1:**  
+   - Player A leads with 9♠.  
+   - B plays K♠, C plays J♠, D plays 7♠.  
+   - C wins with J♠.  
+
+2. **Trick 2:**  
+   - C leads with A♠.  
+   - D plays 10♠, A plays Q♠, B plays 8♠.  
+   - C wins with A♠.  
+
+3. **Trick 3:**  
+   - C leads with 7♦.  
+   - D plays J♦, A plays 9♦, B plays K♦.  
+   - D wins with J♦.  
+
+4. **Trick 4:**  
+   - D leads with 10♦.  
+   - A plays A♦, B plays Q♦, C plays 8♦.  
+   - A wins with A♦.  
+
+5. **Trick 5:**  
+   - A leads with 7♥ (reveals trump).  
+   - B plays J♥, C plays 9♥, D plays K♥.  
+   - B wins with J♥ (trump).  
+
+6. **Trick 6:**  
+   - B leads with A♥.  
+   - C plays 10♥, D plays Q♥, A plays 8♥.  
+   - B wins with A♥.  
+
+7. **Trick 7:**  
+   - B leads with 9♣.  
+   - C plays J♣, D plays 7♣, A plays K♣.  
+   - C wins with J♣.  
+
+8. **Trick 8:**  
+   - C leads with A♣.  
+   - D plays 10♣, A plays Q♣, B plays 8♣.  
+   - C wins with A♣.  
+
+### Scoring
+- **Team A & C (bidders):**  
+  - J♠ (3), A♠ (1), A♦ (1), 9♦ (2), J♣ (3), A♣ (1)  
+  - **Total = 11 points**
+
+- **Team B & D (opponents):**  
+  - J♦ (3), 10♠ (1), J♥ (3), A♥ (1), 9♣ (2)  
+  - **Total = 10 points**
+
+- **Grand Total = 21 points** (the other 7 points are in non‑scoring cards like K, Q, 8, 7).
+
+- The bid was **19**.  
+- The bidder’s team (A & C) scored only **11 points**, which is far below their target.  
+- Therefore, they **fail the bid**.
+
+### Result
+- Opponents (B & D) win the round.  
+- **Scoring outcome:**  
+  - Team B & D = **+1**  
+  - Team A & C = **-1**
