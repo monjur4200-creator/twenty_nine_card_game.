@@ -1,0 +1,46 @@
+{
+  "deck": {
+    "cards": 32,
+    "ranking": ["J", "9", "A", "10", "K", "Q", "8", "7"],
+    "points": {
+      "J": 3,
+      "9": 2,
+      "A": 1,
+      "10": 1,
+      "K": 0,
+      "Q": 0,
+      "8": 0,
+      "7": 0
+    }
+  },
+  "bidding": {
+    "minimumBid": 16,
+    "noTieAllowed": true
+  },
+  "trump": {
+    "blindTrump": true,
+    "seventhCardTrump": true
+  },
+  "scoring": {
+    "marginRequired": 6,
+    "roundWin": 1,
+    "roundLoss": -1,
+    "allTricksBonus": 2
+  },
+  "challenges": {
+    "double": { "win": 2, "lose": -2 },
+    "redouble": { "win": 4, "lose": -4 },
+    "fullSet": { "win": 6, "lose": -6 },
+    "singleHand": { "win": 3, "lose": -3 }
+  },
+  "specialRules": {
+    "marriage": { "win": 4, "lose": -4 }
+  },
+  "redealConditions": [
+    "allJacks",
+    "noPointCards",
+    "noTrumpCard",
+    "teamNoTrumpCards",
+    "onlyDealerBids"
+  ]
+}
