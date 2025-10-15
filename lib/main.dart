@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/game_screen.dart';
 
 void main() {
   runApp(const TwentyNineApp());
@@ -12,14 +13,8 @@ class TwentyNineApp extends StatelessWidget {
     return MaterialApp(
       title: '29 Card Game',
       debugShowCheckedModeBanner: false,
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'Welcome to 29!',
-            style: TextStyle(fontSize: 24),
-          ),
-        ),
-      ),
+      theme: ThemeData(primarySwatch: Colors.teal),
+      home: MyGameScreen(), // ✅ No const
     );
   }
 }
