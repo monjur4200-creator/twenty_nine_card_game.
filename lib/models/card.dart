@@ -6,10 +6,10 @@ class Card29 {
   final Suit suit;
   final Rank rank;
 
-  bool isTrump = false;
-  bool isPlayed = false;
+  final bool isTrump;
+  final bool isPlayed;
 
-  Card29(this.suit, this.rank);
+  const Card29(this.suit, this.rank, {this.isTrump = false, this.isPlayed = false});
 
   /// Points based on Twenty Nine rules
   int get points {
@@ -35,16 +35,18 @@ class Card29 {
 
   /// Create a copy with updated flags
   Card29 copyWith({bool? isTrump, bool? isPlayed}) {
-    final copy = Card29(suit, rank);
-    copy.isTrump = isTrump ?? this.isTrump;
-    copy.isPlayed = isPlayed ?? this.isPlayed;
-    return copy;
+    return Card29(
+      suit,
+      rank,
+      isTrump: isTrump ?? this.isTrump,
+      isPlayed: isPlayed ?? this.isPlayed,
+    );
   }
 
   /// Compare cards by suit then rank
   int compareTo(Card29 other) {
     if (suit != other.suit) return suit.index - other.suit.index;
-    return rank.value - other.rank.value; // 🆕 uses RankValue extension
+    return rank.value - other.rank.value;
   }
 
   @override
@@ -77,7 +79,7 @@ class Card29 {
   int get hashCode => suit.hashCode ^ rank.hashCode;
 }
 
-/// 🆕 Extension to give Rank numeric values for comparison
+/// Extension to give Rank numeric values for comparison
 extension RankValue on Rank {
   int get value {
     switch (this) {

@@ -6,12 +6,15 @@ class Trick {
 
   /// Adds a card play to the trick
   void addPlay(Player player, Card29 card) {
-    card.isPlayed = true;
-    plays[player] = card;
+    if (plays.containsKey(player)) {
+      throw ArgumentError('Player ${player.name} has already played this trick.');
+    }
+    final updated = card.copyWith(isPlayed: true);
+    plays[player] = updated;
   }
 
   /// Determines the winner of the trick based on trump and rank
-  Player? determineWinner(String trumpSuitName) {
+  Player? determineWinner(Suit? trumpSuit) {
     if (plays.isEmpty) return null;
 
     final leadSuit = plays.values.first.suit;
@@ -21,18 +24,15 @@ class Trick {
     for (var entry in plays.entries) {
       final card = entry.value;
 
-      final isTrump = trumpSuitName.isNotEmpty &&
-          (card.isTrump || card.suit.toString().split('.').last == trumpSuitName);
-      final currentIsTrump = trumpSuitName.isNotEmpty &&
-          (winningCard.isTrump || winningCard.suit.toString().split('.').last == trumpSuitName);
+      final isTrump = trumpSuit != null && (card.isTrump || card.suit == trumpSuit);
+      final currentIsTrump = trumpSuit != null && (winningCard.isTrump || winningCard.suit == trumpSuit);
 
       if (isTrump && !currentIsTrump) {
         winner = entry.key;
         winningCard = card;
       } else if (!isTrump && !currentIsTrump) {
-        // Compare by lead suit and rank
-        if (card.suit == winningCard.suit &&
-            card.rank.value > winningCard.rank.value) {
+        // Compare only if same suit as lead
+        if (card.suit == leadSuit && card.rank.value > winningCard.rank.value) {
           winner = entry.key;
           winningCard = card;
         }

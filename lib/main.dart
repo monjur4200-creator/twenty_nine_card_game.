@@ -13,8 +13,11 @@ class TwentyNineApp extends StatelessWidget {
     return MaterialApp(
       title: '29 Card Game',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.teal),
-      home: MyGameScreen(), // ✅ No const
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+        useMaterial3: true, // modern Material Design
+      ),
+      home: const MyGameScreen(), // ✅ const if MyGameScreen supports it
     );
   }
 }

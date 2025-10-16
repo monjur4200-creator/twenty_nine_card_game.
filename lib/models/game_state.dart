@@ -51,8 +51,11 @@ class GameState {
     trumpRevealed = true;
 
     for (var player in players) {
-      for (var card in player.hand) {
-        card.isTrump = (card.suit == suit);
+      for (var i = 0; i < player.hand.length; i++) {
+        final card = player.hand[i];
+        if (card.suit == suit) {
+          player.hand[i] = card.copyWith(isTrump: true);
+        }
       }
     }
   }
@@ -88,7 +91,7 @@ class GameState {
 
   /// Finalizes a trick and updates winner
   void finalizeTrick() {
-    final winner = currentTrick.determineWinner(trump?.name ?? '');
+    final winner = currentTrick.determineWinner(trump);
     if (winner != null) {
       winner.tricksWon++;
       currentTurn = players.indexOf(winner);
@@ -125,7 +128,7 @@ class GameState {
       scores[player] = 0;
     }
     for (var trick in tricks) {
-      final winner = trick.determineWinner(trump?.name ?? '');
+      final winner = trick.determineWinner(trump);
       if (winner != null) {
         scores[winner] = scores[winner]! + trick.totalPoints();
       }
@@ -137,9 +140,10 @@ class GameState {
   Map<int, int> calculateTeamScores() {
     final teamScores = {1: 0, 2: 0};
     for (var trick in tricks) {
-      final winner = trick.determineWinner(trump?.name ?? '');
+      final winner = trick.determineWinner(trump);
       if (winner != null) {
-        teamScores[winner.teamId] = teamScores[winner.teamId]! + trick.totalPoints();
+        teamScores[winner.teamId] =
+            teamScores[winner.teamId]! + trick.totalPoints();
       }
     }
     return teamScores;
@@ -153,8 +157,18 @@ class GameState {
     return teamScores[biddingTeam]! >= targetScore!;
   }
 
+  /// Syncs player.score with calculated scores
+  void updatePlayerScores() {
+    final scores = calculateScores();
+    for (var entry in scores.entries) {
+      entry.key.score = entry.value;
+    }
+  }
+
   /// Prints round summary for all players and teams
   void printRoundSummary() {
+    updatePlayerScores();
+
     print("Round $roundNumber Summary:");
     for (var player in players) {
       print("${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}");
