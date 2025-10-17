@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/game_screen.dart';
+import 'screens/main_menu.dart'; // ✅ import the Main Menu screen
+import 'screens/game_screen.dart'; // keep this for navigation later
 
 void main() {
   runApp(const TwentyNineApp());
@@ -17,7 +18,7 @@ class TwentyNineApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         useMaterial3: true, // modern Material Design
       ),
-      home: const MyGameScreen(), // ✅ const if MyGameScreen supports it
+      home: const MainMenu(), // ✅ start at Main Menu instead of Game Screen
     );
   }
 }

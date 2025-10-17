@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../models/card.dart';
 import '../models/game_state.dart';
+import 'bidding_screen.dart';
+import 'round_summary.dart';
 
-class MyGameScreen extends StatefulWidget {
-  const MyGameScreen({super.key});
+class GameScreen extends StatefulWidget {
+  const GameScreen({super.key});
 
   @override
-  State<MyGameScreen> createState() => _MyGameScreenState();
+  State<GameScreen> createState() => _GameScreenState();
 }
 
-class _MyGameScreenState extends State<MyGameScreen> {
-  String resultText = 'Tap to run simulation';
+class _GameScreenState extends State<GameScreen> {
+  String resultText = 'Tap "Run Game Simulation" to see results';
+  int team1Score = 0;
+  int team2Score = 0;
+  int roundNumber = 1;
 
   void runGameSimulation() {
     final players = [
@@ -45,7 +50,8 @@ class _MyGameScreenState extends State<MyGameScreen> {
     final buffer = StringBuffer();
     buffer.writeln('📊 Round ${game.roundNumber} Summary:\n');
     for (var player in players) {
-      buffer.writeln('${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}');
+      buffer.writeln(
+          '${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}');
     }
 
     final teamScores = game.calculateTeamScores();
@@ -60,27 +66,106 @@ class _MyGameScreenState extends State<MyGameScreen> {
 
     setState(() {
       resultText = buffer.toString();
+      team1Score = teamScores[1] ?? 0;
+      team2Score = teamScores[2] ?? 0;
+      roundNumber = game.roundNumber;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Twenty Nine')),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text('Twenty Nine - Game Table'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Restart Simulation',
+            onPressed: () {
+              setState(() {
+                resultText = 'Tap "Run Game Simulation" to see results';
+                team1Score = 0;
+                team2Score = 0;
+                roundNumber = 1;
+              });
+            },
+          ),
+        ],
+      ),
+      body: Container(
+        color: Colors.green[100], // subtle table background
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            ElevatedButton(
+            // Run Simulation Button
+            ElevatedButton.icon(
               onPressed: runGameSimulation,
-              child: const Text('Run Game Simulation'),
+              icon: const Icon(Icons.play_arrow),
+              label: const Text('Run Game Simulation'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Navigate to Bidding Screen
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BiddingScreen()),
+                );
+              },
+              icon: const Icon(Icons.gavel),
+              label: const Text('Go to Bidding Screen'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                backgroundColor: Colors.orange,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Navigate to Round Summary
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RoundSummary(
+                      team1Score: team1Score,
+                      team2Score: team2Score,
+                      roundNumber: roundNumber,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.summarize),
+              label: const Text('Go to Round Summary'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                backgroundColor: Colors.purple,
+              ),
             ),
             const SizedBox(height: 20),
+
+            // Results Log
             Expanded(
-              child: SingleChildScrollView(
-                child: Text(
-                  resultText,
-                  style: const TextStyle(fontSize: 16),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.black26),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SingleChildScrollView(
+                  child: Text(
+                    resultText,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.4,
+                      fontFamily: 'monospace', // gives it a "log" feel
+                    ),
+                  ),
                 ),
               ),
             ),
