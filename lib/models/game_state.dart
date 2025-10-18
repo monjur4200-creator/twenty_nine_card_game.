@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'; // for debugPrint
+
 import 'card.dart';
 import 'player.dart';
 import 'trick.dart';
@@ -51,12 +53,7 @@ class GameState {
     trumpRevealed = true;
 
     for (var player in players) {
-      for (var i = 0; i < player.hand.length; i++) {
-        final card = player.hand[i];
-        if (card.suit == suit) {
-          player.hand[i] = card.copyWith(isTrump: true);
-        }
-      }
+      player.markTrumpCards(suit); // ✅ use Player’s safe method
     }
   }
 
@@ -169,19 +166,20 @@ class GameState {
   void printRoundSummary() {
     updatePlayerScores();
 
-    print("Round $roundNumber Summary:");
+    debugPrint("Round $roundNumber Summary:");
     for (var player in players) {
-      print("${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}");
+      debugPrint(
+          "${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}");
     }
 
     final teamScores = calculateTeamScores();
-    print("Team 1 Score: ${teamScores[1]}");
-    print("Team 2 Score: ${teamScores[2]}");
+    debugPrint("Team 1 Score: ${teamScores[1]}");
+    debugPrint("Team 2 Score: ${teamScores[2]}");
 
     if (highestBidder != null) {
       final biddingTeam = highestBidder!.teamId;
       final result = didBiddingTeamWin() ? "WON" : "LOST";
-      print("Bidding Team ($biddingTeam) $result the round!");
+      debugPrint("Bidding Team ($biddingTeam) $result the round!");
     }
   }
 }

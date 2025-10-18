@@ -8,7 +8,9 @@ class Player {
   bool isDealer;
   int? partnerId;
 
+  // Keep the actual hand private and mutable
   final List<Card29> _hand = [];
+
   int score = 0;
   int bid = 0;
   int tricksWon = 0;
@@ -30,14 +32,23 @@ class Player {
     _hand.addAll(cards);
   }
 
+  /// Marks trump cards in the hand
+  void markTrumpCards(Suit suit) {
+    for (var i = 0; i < _hand.length; i++) {
+      final card = _hand[i];
+      if (card.suit == suit) {
+        _hand[i] = card.copyWith(isTrump: true);
+      }
+    }
+  }
+
   /// Plays a card and marks it as played
   void playCard(Card29 card) {
-    if (!_hand.contains(card)) {
+    final index = _hand.indexOf(card);
+    if (index == -1) {
       throw ArgumentError('Card not in hand: $card');
     }
-    final updated = card.copyWith(isPlayed: true);
-    _hand.remove(card);
-    _hand.add(updated); // keep record of played state if needed
+    _hand[index] = card.copyWith(isPlayed: true);
   }
 
   /// Sorts the player's hand by suit and rank

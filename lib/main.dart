@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/main_menu.dart'; // ✅ import the Main Menu screen
-import 'screens/game_screen.dart'; // keep this for navigation later
+import 'screens/main_menu.dart'; // Main Menu screen
 
 void main() {
   runApp(const TwentyNineApp());
@@ -15,10 +14,10 @@ class TwentyNineApp extends StatelessWidget {
       title: '29 Card Game',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
-        useMaterial3: true, // modern Material Design
+        colorSchemeSeed: Colors.teal, // Material 3-friendly color setup
+        useMaterial3: true,
       ),
-      home: const MainMenu(), // ✅ start at Main Menu instead of Game Screen
+      home: const MainMenu(), // Start at Main Menu
     );
   }
 }

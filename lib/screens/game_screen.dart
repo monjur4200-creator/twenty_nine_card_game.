@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+
 import '../models/player.dart';
 import '../models/card.dart';
 import '../models/game_state.dart';
 import 'bidding_screen.dart';
 import 'round_summary.dart';
+
+// Multiplayer sync service
+import '../services/sync_service.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -17,6 +21,9 @@ class _GameScreenState extends State<GameScreen> {
   int team1Score = 0;
   int team2Score = 0;
   int roundNumber = 1;
+
+  final SyncService _syncService = SyncService();
+  String _connectionStatus = "Not connected";
 
   void runGameSimulation() {
     final players = [
@@ -72,6 +79,110 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
+  // ✅ Helper methods for showing snackbars
+  void _showConnectedSnack(BuildContext ctx, String deviceName) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Text("✅ Connected to $deviceName"),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showConnectionFailedSnack(BuildContext ctx) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      const SnackBar(
+        content: Text("❌ Connection failed"),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Show a dialog with paired devices
+  Future<void> _showDevicePicker() async {
+    final devices = await _syncService.getPairedDevices();
+
+    if (!mounted) return;
+
+    if (devices.isEmpty) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("No Devices Found"),
+          content: const Text("No paired Bluetooth devices were found."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Select a Device"),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            itemCount: devices.length,
+            itemBuilder: (context, index) {
+              final device = devices[index];
+              return ListTile(
+                leading: const Icon(Icons.devices),
+                title: Text(device.name ?? "Unknown"),
+                subtitle: Text(device.address),
+                onTap: () async {
+                  final ctx = context; // ✅ capture context before async
+                  Navigator.pop(ctx);
+
+                  try {
+                    await _syncService.connectToDevice(device.address);
+                    if (!context.mounted) return;
+                    setState(() {
+                      _connectionStatus =
+                          "Connected to ${device.name ?? device.address}";
+                    });
+                    _showConnectedSnack(ctx, device.name ?? device.address);
+                  } catch (_) {
+                    if (!context.mounted) return;
+                    setState(() {
+                      _connectionStatus = "Connection failed";
+                    });
+                    _showConnectionFailedSnack(ctx);
+                  }
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _disconnect() {
+    _syncService.disconnect();
+    setState(() {
+      _connectionStatus = "Not connected";
+    });
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("🔌 Disconnected"),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,10 +204,31 @@ class _GameScreenState extends State<GameScreen> {
         ],
       ),
       body: Container(
-        color: Colors.green[100], // subtle table background
+        color: Colors.green[100],
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Connection Status Bar
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _connectionStatus.startsWith("Connected")
+                    ? Colors.green[300]
+                    : Colors.red[300],
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                _connectionStatus,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 12),
+
             // Run Simulation Button
             ElevatedButton.icon(
               onPressed: runGameSimulation,
@@ -104,6 +236,30 @@ class _GameScreenState extends State<GameScreen> {
               label: const Text('Run Game Simulation'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Multiplayer Connect Button
+            ElevatedButton.icon(
+              onPressed: _showDevicePicker,
+              icon: const Icon(Icons.wifi_tethering),
+              label: const Text('Connect (Multiplayer)'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                backgroundColor: Colors.blue,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Disconnect Button
+            ElevatedButton.icon(
+              onPressed: _disconnect,
+              icon: const Icon(Icons.link_off),
+              label: const Text('Disconnect'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                backgroundColor: Colors.red,
               ),
             ),
             const SizedBox(height: 12),
@@ -152,7 +308,7 @@ class _GameScreenState extends State<GameScreen> {
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
+                                decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.black26),
                   borderRadius: BorderRadius.circular(8),

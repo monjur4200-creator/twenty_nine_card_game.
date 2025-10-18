@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'game_screen.dart'; // we'll create this later in Phase 5
+import 'game_screen.dart'; // Game screen will be created in Phase 5
 
 class MainMenu extends StatelessWidget {
   const MainMenu({super.key});
@@ -7,11 +7,15 @@ class MainMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Twenty Nine")),
+      appBar: AppBar(
+        title: const Text("Main Menu"), // ✅ Matches your widget test
+        centerTitle: true,
+      ),
       body: Container(
         color: Colors.green[200], // placeholder table color
         child: Center(
           child: SingleChildScrollView( // keeps layout safe on small screens
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -19,7 +23,9 @@ class MainMenu extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const GameScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const GameScreen(),
+                      ),
                     );
                   },
                   child: const Text("Start Game"),
@@ -27,7 +33,6 @@ class MainMenu extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    // Placeholder for rules screen
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Rules screen coming soon!")),
                     );
@@ -37,7 +42,6 @@ class MainMenu extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    // Placeholder for settings screen
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Settings screen coming soon!")),
                     );
