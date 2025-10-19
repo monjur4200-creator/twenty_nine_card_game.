@@ -6,11 +6,14 @@ import '../models/game_state.dart';
 import 'bidding_screen.dart';
 import 'round_summary.dart';
 
-// Multiplayer sync service
+// Multiplayer sync service (Bluetooth/local)
 import '../services/sync_service.dart';
+import '../services/firebase_service.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+  final FirebaseService firebaseService; // ✅ required service
+
+  const GameScreen({super.key, required this.firebaseService});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -25,6 +28,7 @@ class _GameScreenState extends State<GameScreen> {
   final SyncService _syncService = SyncService();
   String _connectionStatus = "Not connected";
 
+  // --- Game Simulation ---
   void runGameSimulation() {
     final players = [
       Player(id: 1, name: 'Mongur', teamId: 1),
@@ -45,6 +49,7 @@ class _GameScreenState extends State<GameScreen> {
 
     game.revealTrump(Suit.hearts);
 
+    // Play a few tricks
     for (int trickNumber = 1; trickNumber <= 3; trickNumber++) {
       for (var player in game.players) {
         final cardToPlay = player.hand.isNotEmpty ? player.hand.first : null;
@@ -54,6 +59,7 @@ class _GameScreenState extends State<GameScreen> {
       }
     }
 
+    // Build round summary
     final buffer = StringBuffer();
     buffer.writeln('📊 Round ${game.roundNumber} Summary:\n');
     for (var player in players) {
@@ -79,7 +85,7 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  // ✅ Helper methods for showing snackbars
+  // --- Connection Helpers ---
   void _showConnectedSnack(BuildContext ctx, String deviceName) {
     ScaffoldMessenger.of(ctx).showSnackBar(
       SnackBar(
@@ -100,14 +106,11 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  /// Show a dialog with paired devices
   Future<void> _showDevicePicker() async {
     final devices = await _syncService.getPairedDevices();
-
     if (!mounted) return;
 
     if (devices.isEmpty) {
-      if (!mounted) return;
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -124,7 +127,6 @@ class _GameScreenState extends State<GameScreen> {
       return;
     }
 
-    if (!mounted) return;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -141,7 +143,7 @@ class _GameScreenState extends State<GameScreen> {
                 title: Text(device.name ?? "Unknown"),
                 subtitle: Text(device.address),
                 onTap: () async {
-                  final ctx = context; // ✅ capture context before async
+                  final ctx = context; // capture context
                   Navigator.pop(ctx);
 
                   try {
@@ -183,6 +185,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  // --- UI ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,7 +211,7 @@ class _GameScreenState extends State<GameScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Connection Status Bar
+            // --- Connection Status Bar ---
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(8),
@@ -229,7 +232,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Run Simulation Button
+            // --- Run Simulation Button ---
             ElevatedButton.icon(
               onPressed: runGameSimulation,
               icon: const Icon(Icons.play_arrow),
@@ -240,7 +243,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Multiplayer Connect Button
+            // --- Multiplayer Connect Button ---
             ElevatedButton.icon(
               onPressed: _showDevicePicker,
               icon: const Icon(Icons.wifi_tethering),
@@ -252,7 +255,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Disconnect Button
+            // --- Disconnect Button ---
             ElevatedButton.icon(
               onPressed: _disconnect,
               icon: const Icon(Icons.link_off),
@@ -264,12 +267,12 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Navigate to Bidding Screen
+            // --- Navigate to Bidding Screen ---
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const BiddingScreen()),
+                  MaterialPageRoute(builder: (_) => const BiddingScreen()),
                 );
               },
               icon: const Icon(Icons.gavel),
@@ -281,16 +284,17 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Navigate to Round Summary
+                        // --- Navigate to Round Summary ---
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => RoundSummary(
+                    builder: (_) => RoundSummary(
                       team1Score: team1Score,
                       team2Score: team2Score,
                       roundNumber: roundNumber,
+                      firebaseService: widget.firebaseService, // ✅ pass service
                     ),
                   ),
                 );
@@ -304,11 +308,11 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Results Log
+            // --- Results Log ---
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
+                decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.black26),
                   borderRadius: BorderRadius.circular(8),

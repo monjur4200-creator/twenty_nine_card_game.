@@ -9,7 +9,12 @@ class Card29 {
   final bool isTrump;
   final bool isPlayed;
 
-  const Card29(this.suit, this.rank, {this.isTrump = false, this.isPlayed = false});
+  const Card29(
+    this.suit,
+    this.rank, {
+    this.isTrump = false,
+    this.isPlayed = false,
+  });
 
   /// Points based on Twenty Nine rules
   int get points {
@@ -47,6 +52,28 @@ class Card29 {
   int compareTo(Card29 other) {
     if (suit != other.suit) return suit.index - other.suit.index;
     return rank.value - other.rank.value;
+  }
+
+  // --- Serialization ---
+
+  /// Converts this card into a Firestore-friendly map
+  Map<String, dynamic> toMap() {
+    return {
+      'suit': suit.name,
+      'rank': rank.name,
+      'isTrump': isTrump,
+      'isPlayed': isPlayed,
+    };
+  }
+
+  /// Creates a Card29 from a Firestore map
+  factory Card29.fromMap(Map<String, dynamic> map) {
+    return Card29(
+      Suit.values.byName(map['suit'] as String),
+      Rank.values.byName(map['rank'] as String),
+      isTrump: map['isTrump'] ?? false,
+      isPlayed: map['isPlayed'] ?? false,
+    );
   }
 
   @override

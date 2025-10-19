@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "176311148983",
+    "firebase_url": "https://twenty-nine-card-game-default-rtdb.firebaseio.com",
+    "project_id": "twenty-nine-card-game",
+    "storage_bucket": "twenty-nine-card-game.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:176311148983:android:09675788ce711e5e68c832",
+        "android_client_info": {
+          "package_name": "com.mongur.twenty_nine_card_game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCW4i4d4IP8M6nOcKzWZ-BisvibfN6qcqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,37 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "twenty-nine-card-game",
+          "appId": "1:176311148983:android:09675788ce711e5e68c832",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "twenty-nine-card-game",
+          "configurations": {
+            "android": "1:176311148983:android:09675788ce711e5e68c832",
+            "ios": "1:176311148983:ios:77ab77c3283a67fd68c832",
+            "macos": "1:176311148983:ios:77ab77c3283a67fd68c832",
+            "web": "1:176311148983:web:5e9b9b9fbdc00f7268c832",
+            "windows": "1:176311148983:web:9336712e791993f168c832"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

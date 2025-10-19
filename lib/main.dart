@@ -1,23 +1,45 @@
 import 'package:flutter/material.dart';
-import 'screens/main_menu.dart'; // Main Menu screen
+import 'services/firebase_service.dart';
+import 'services/presence_service.dart';
+import 'services/room_service.dart';
+import 'screens/main_menu.dart';
 
 void main() {
-  runApp(const TwentyNineApp());
+  runApp(TwentyNineApp()); // production entry point
 }
 
 class TwentyNineApp extends StatelessWidget {
-  const TwentyNineApp({super.key});
+  final FirebaseService firebaseService;
+  final PresenceService presenceService;
+  final RoomService roomService;
+
+  /// In production you can just call `TwentyNineApp()`.
+  /// In tests you can pass fakes:
+  ///   `TwentyNineApp(
+  ///       firebaseService: fakeService,
+  ///       presenceService: fakePresence,
+  ///       roomService: fakeRoom,
+  ///   )`
+  TwentyNineApp({
+    super.key,
+    FirebaseService? firebaseService,
+    PresenceService? presenceService,
+    RoomService? roomService,
+  })  : firebaseService = firebaseService ?? FirebaseService(),
+        presenceService = presenceService ?? PresenceService(),
+        roomService = roomService ?? RoomService();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '29 Card Game',
+      title: 'Twenty Nine',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.teal, // Material 3-friendly color setup
-        useMaterial3: true,
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: MainMenu(
+        firebaseService: firebaseService,
+        presenceService: presenceService,
+        roomService: roomService,
       ),
-      home: const MainMenu(), // Start at Main Menu
     );
   }
 }
