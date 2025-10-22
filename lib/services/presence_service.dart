@@ -7,11 +7,14 @@ class PresenceService {
   /// In tests, pass a fake or mock database:
   ///   `PresenceService(database: fakeDb)`
   PresenceService({FirebaseDatabase? database})
-      : _db = database ?? FirebaseDatabase.instance;
+    : _db = database ?? FirebaseDatabase.instance;
 
   /// Mark a player as present in a room
   Future<void> setPlayerPresence(
-      String roomId, String playerId, String playerName) async {
+    String roomId,
+    String playerId,
+    String playerName,
+  ) async {
     await _db.ref('rooms/$roomId/players/$playerId').set({
       'id': playerId,
       'name': playerName,
@@ -21,7 +24,10 @@ class PresenceService {
 
   /// Remove a player from a room
   Future<void> removePlayer(
-      String roomId, String playerId, String playerName) async {
+    String roomId,
+    String playerId,
+    String playerName,
+  ) async {
     await _db.ref('rooms/$roomId/players/$playerId').remove();
   }
 

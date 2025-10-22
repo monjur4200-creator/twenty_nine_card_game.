@@ -5,7 +5,6 @@ enum Rank { seven, eight, nine, ten, jack, queen, king, ace }
 class Card29 {
   final Suit suit;
   final Rank rank;
-
   final bool isTrump;
   final bool isPlayed;
 
@@ -27,15 +26,19 @@ class Card29 {
       case Rank.ten:
         return 1;
       default:
-        return 0;
+        return 0; // 7, 8, Q, K
     }
   }
 
-  /// Generate a full deck of 32 cards
+  /// Backward compatibility for tests
+  int get pointValue => points;
+
+  /// Generate a full deck of 32 cards (7–Ace in each suit)
   static List<Card29> fullDeck() {
-    return Suit.values
-        .expand((suit) => Rank.values.map((rank) => Card29(suit, rank)))
-        .toList();
+    return [
+      for (final suit in Suit.values)
+        for (final rank in Rank.values) Card29(suit, rank),
+    ];
   }
 
   /// Create a copy with updated flags
@@ -48,59 +51,55 @@ class Card29 {
     );
   }
 
-  /// Compare cards by suit then rank
+  /// Compare cards by suit index then rank value (for sorting only)
   int compareTo(Card29 other) {
-    if (suit != other.suit) return suit.index - other.suit.index;
-    return rank.value - other.rank.value;
+    final suitDiff = suit.index - other.suit.index;
+    return suitDiff != 0 ? suitDiff : rank.value - other.rank.value;
   }
-
-  // --- Serialization ---
 
   /// Converts this card into a Firestore-friendly map
-  Map<String, dynamic> toMap() {
-    return {
-      'suit': suit.name,
-      'rank': rank.name,
-      'isTrump': isTrump,
-      'isPlayed': isPlayed,
-    };
-  }
+  Map<String, dynamic> toMap() => {
+    'suit': suit.name,
+    'rank': rank.name,
+    'isTrump': isTrump,
+    'isPlayed': isPlayed,
+  };
 
   /// Creates a Card29 from a Firestore map
   factory Card29.fromMap(Map<String, dynamic> map) {
     return Card29(
       Suit.values.byName(map['suit'] as String),
       Rank.values.byName(map['rank'] as String),
-      isTrump: map['isTrump'] ?? false,
-      isPlayed: map['isPlayed'] ?? false,
+      isTrump: map['isTrump'] as bool? ?? false,
+      isPlayed: map['isPlayed'] as bool? ?? false,
     );
   }
 
   @override
   String toString() {
     const suitSymbols = {
-      Suit.hearts: "♥",
-      Suit.diamonds: "♦",
-      Suit.clubs: "♣",
-      Suit.spades: "♠",
+      Suit.hearts: '♥',
+      Suit.diamonds: '♦',
+      Suit.clubs: '♣',
+      Suit.spades: '♠',
     };
     const rankLabels = {
-      Rank.seven: "7",
-      Rank.eight: "8",
-      Rank.nine: "9",
-      Rank.ten: "10",
-      Rank.jack: "J",
-      Rank.queen: "Q",
-      Rank.king: "K",
-      Rank.ace: "A",
+      Rank.seven: '7',
+      Rank.eight: '8',
+      Rank.nine: '9',
+      Rank.ten: '10',
+      Rank.jack: 'J',
+      Rank.queen: 'Q',
+      Rank.king: 'K',
+      Rank.ace: 'A',
     };
-    return "${rankLabels[rank]}${suitSymbols[suit]}";
+    return '${rankLabels[rank]}${suitSymbols[suit]}';
   }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Card29 && suit == other.suit && rank == other.rank;
+      (other is Card29 && suit == other.suit && rank == other.rank);
 
   @override
   int get hashCode => suit.hashCode ^ rank.hashCode;

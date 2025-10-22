@@ -38,7 +38,9 @@ class RoundSummary extends StatelessWidget {
                 trailing: Text(
                   "$team1Score",
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -49,7 +51,9 @@ class RoundSummary extends StatelessWidget {
                 trailing: Text(
                   "$team2Score",
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -59,8 +63,9 @@ class RoundSummary extends StatelessWidget {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        MainMenu(firebaseService: firebaseService), // ✅ pass service
+                    builder: (context) => MainMenu(
+                      firebaseService: firebaseService,
+                    ), // ✅ pass service
                   ),
                   (route) => false,
                 );

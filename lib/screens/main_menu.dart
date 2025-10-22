@@ -48,10 +48,7 @@ class _MainMenuState extends State<MainMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Main Menu"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Main Menu"), centerTitle: true),
       body: Container(
         color: Colors.green[200],
         child: Center(
@@ -80,8 +77,8 @@ class _MainMenuState extends State<MainMenu> {
                 ElevatedButton(
                   key: const Key('createRoomButton'),
                   onPressed: () async {
-                    final roomId =
-                        DateTime.now().millisecondsSinceEpoch.toString();
+                    final roomId = DateTime.now().millisecondsSinceEpoch
+                        .toString();
                     final playerId = _uuid.v4();
                     const displayName = "Player 1";
 

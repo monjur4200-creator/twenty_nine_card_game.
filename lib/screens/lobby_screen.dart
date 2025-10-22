@@ -12,7 +12,8 @@ class LobbyScreen extends StatefulWidget {
   final PresenceService presenceService;
   final RoomService roomService;
 
-  LobbyScreen({   // 👈 removed "const"
+  LobbyScreen({
+    // 👈 removed "const"
     super.key,
     required this.roomId,
     required this.playerId,
@@ -20,8 +21,8 @@ class LobbyScreen extends StatefulWidget {
     required this.firebaseService,
     PresenceService? presenceService,
     RoomService? roomService,
-  })  : presenceService = presenceService ?? PresenceService(),
-        roomService = roomService ?? RoomService();
+  }) : presenceService = presenceService ?? PresenceService(),
+       roomService = roomService ?? RoomService();
 
   @override
   State<LobbyScreen> createState() => _LobbyScreenState();
@@ -124,8 +125,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
             // --- Player List ---
             Expanded(
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream:
-                    widget.presenceService.getRoomPlayersStream(widget.roomId),
+                stream: widget.presenceService.getRoomPlayersStream(
+                  widget.roomId,
+                ),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
@@ -138,8 +140,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
             // --- Host-only Start Game Button ---
             if (isHost)
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: ElevatedButton.icon(
                   key: const Key('startGameButton'),
                   onPressed: _startGame,

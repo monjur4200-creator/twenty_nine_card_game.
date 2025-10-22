@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-
 import 'package:twenty_nine_card_game/main.dart';
 import 'package:twenty_nine_card_game/services/firebase_service.dart';
 import 'package:twenty_nine_card_game/screens/game_screen.dart';
@@ -60,10 +59,7 @@ void main() {
   setUp(() {
     final fakeFirestore = FakeFirebaseFirestore();
     final mockAuth = MockFirebaseAuth(); // ✅ mock auth instead of real
-    fakeService = FirebaseService(
-      auth: mockAuth,
-      firestore: fakeFirestore,
-    );
+    fakeService = FirebaseService(auth: mockAuth, firestore: fakeFirestore);
     fakePresence = FakePresenceService();
     fakeRoom = FakeRoomService();
   });
@@ -81,8 +77,9 @@ void main() {
       expect(find.text('Main Menu'), findsOneWidget);
     });
 
-    testWidgets('Main Menu shows all expected buttons and fields',
-        (WidgetTester tester) async {
+    testWidgets('Main Menu shows all expected buttons and fields', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -101,15 +98,14 @@ void main() {
 
     testWidgets('Game screen shows correct title', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: GameScreen(firebaseService: fakeService),
-        ),
+        MaterialApp(home: GameScreen(firebaseService: fakeService)),
       );
       expect(find.text('Twenty Nine - Game Table'), findsOneWidget);
     });
 
-    testWidgets('Tapping Start Game navigates to GameScreen',
-        (WidgetTester tester) async {
+    testWidgets('Tapping Start Game navigates to GameScreen', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -123,8 +119,9 @@ void main() {
       expect(find.text('Twenty Nine - Game Table'), findsOneWidget);
     });
 
-    testWidgets('Tapping Create Room navigates to LobbyScreen',
-        (WidgetTester tester) async {
+    testWidgets('Tapping Create Room navigates to LobbyScreen', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -138,8 +135,9 @@ void main() {
       expect(find.text('Lobby'), findsOneWidget);
     });
 
-    testWidgets('Tapping Join Room navigates to LobbyScreen',
-        (WidgetTester tester) async {
+    testWidgets('Tapping Join Room navigates to LobbyScreen', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -148,14 +146,18 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(const Key('roomIdField')), 'test-room-123');
+      await tester.enterText(
+        find.byKey(const Key('roomIdField')),
+        'test-room-123',
+      );
       await tester.tap(find.byKey(const Key('joinRoomButton')));
       await tester.pumpAndSettle();
       expect(find.text('Lobby'), findsOneWidget);
     });
 
-    testWidgets('Tapping Leave Room navigates back to Main Menu',
-        (WidgetTester tester) async {
+    testWidgets('Tapping Leave Room navigates back to Main Menu', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,

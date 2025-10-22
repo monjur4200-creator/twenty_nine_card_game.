@@ -9,7 +9,7 @@ class RoomService {
   /// In tests you can pass a fake:
   ///   `RoomService(firestore: FakeFirebaseFirestore())`
   RoomService({FirebaseFirestore? firestore})
-      : firestore = firestore ?? FirebaseFirestore.instance;
+    : firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Creates a new room with initial metadata
   Future<void> createRoom(String roomId, Map<String, dynamic> data) async {

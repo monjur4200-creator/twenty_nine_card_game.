@@ -10,14 +10,22 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 class FakePresenceService implements PresenceService {
   @override
   Future<void> setPlayerPresence(
-      String roomId, String playerId, String playerName) async {}
+    String roomId,
+    String playerId,
+    String playerName,
+  ) async {}
 
   @override
   Future<void> removePlayer(
-      String roomId, String playerId, String playerName) async {}
+    String roomId,
+    String playerId,
+    String playerName,
+  ) async {}
 
   @override
-  Stream<List<Map<String, dynamic>>> getRoomPlayersStream(String roomId) async* {
+  Stream<List<Map<String, dynamic>>> getRoomPlayersStream(
+    String roomId,
+  ) async* {
     yield [];
   }
 }
@@ -73,8 +81,14 @@ class FakeFirebaseService implements FirebaseService {
   Future<int> getPlayerCount(String roomId) async => 0;
 
   @override
-  Future<void> addPlayer(String roomId, Map<String, dynamic> playerData) async {}
+  Future<void> addPlayer(
+    String roomId,
+    Map<String, dynamic> playerData,
+  ) async {}
 
   @override
-  Future<void> removePlayer(String roomId, Map<String, dynamic> playerData) async {}
+  Future<void> removePlayer(
+    String roomId,
+    Map<String, dynamic> playerData,
+  ) async {}
 }

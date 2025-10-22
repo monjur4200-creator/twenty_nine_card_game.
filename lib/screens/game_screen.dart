@@ -64,7 +64,8 @@ class _GameScreenState extends State<GameScreen> {
     buffer.writeln('📊 Round ${game.roundNumber} Summary:\n');
     for (var player in players) {
       buffer.writeln(
-          '${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}');
+        '${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}',
+      );
     }
 
     final teamScores = game.calculateTeamScores();
@@ -284,7 +285,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 12),
 
-                        // --- Navigate to Round Summary ---
+            // --- Navigate to Round Summary ---
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(

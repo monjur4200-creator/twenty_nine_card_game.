@@ -25,9 +25,9 @@ class TwentyNineApp extends StatelessWidget {
     FirebaseService? firebaseService,
     PresenceService? presenceService,
     RoomService? roomService,
-  })  : firebaseService = firebaseService ?? FirebaseService(),
-        presenceService = presenceService ?? PresenceService(),
-        roomService = roomService ?? RoomService();
+  }) : firebaseService = firebaseService ?? FirebaseService(),
+       presenceService = presenceService ?? PresenceService(),
+       roomService = roomService ?? RoomService();
 
   @override
   Widget build(BuildContext context) {

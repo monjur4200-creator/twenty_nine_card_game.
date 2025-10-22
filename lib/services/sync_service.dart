@@ -27,12 +27,14 @@ class SyncService {
       _connection = await BluetoothConnection.toAddress(address);
       debugPrint('✅ Connected to device: $address');
 
-      _connection!.input?.listen((data) {
-        debugPrint('📥 Incoming: ${String.fromCharCodes(data)}');
-      }).onDone(() {
-        debugPrint('❌ Disconnected by remote device');
-        _connection = null;
-      });
+      _connection!.input
+          ?.listen((data) {
+            debugPrint('📥 Incoming: ${String.fromCharCodes(data)}');
+          })
+          .onDone(() {
+            debugPrint('❌ Disconnected by remote device');
+            _connection = null;
+          });
     } catch (e) {
       debugPrint("⚠️ Connection error: $e");
     }

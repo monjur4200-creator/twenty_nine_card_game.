@@ -9,11 +9,9 @@ class FirebaseService {
   /// In production, just call `FirebaseService()`.
   /// In tests, pass fakes or mocks:
   ///   `FirebaseService(auth: fakeAuth, firestore: fakeFirestore)`
-  FirebaseService({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : auth = auth ?? FirebaseAuth.instance,
-        firestore = firestore ?? FirebaseFirestore.instance;
+  FirebaseService({FirebaseAuth? auth, FirebaseFirestore? firestore})
+    : auth = auth ?? FirebaseAuth.instance,
+      firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Sign in anonymously (useful for quick start or tests)
   Future<UserCredential?> signInAnonymously() async {
@@ -42,8 +40,7 @@ class FirebaseService {
   /// Get the number of players in a room
   Future<int> getPlayerCount(String roomId) async {
     try {
-      final snapshot =
-          await firestore.collection('rooms').doc(roomId).get();
+      final snapshot = await firestore.collection('rooms').doc(roomId).get();
 
       final data = snapshot.data();
       if (data == null || data['players'] == null) return 0;
@@ -70,7 +67,10 @@ class FirebaseService {
   }
 
   /// Remove a player from a room
-  Future<void> removePlayer(String roomId, Map<String, dynamic> playerData) async {
+  Future<void> removePlayer(
+    String roomId,
+    Map<String, dynamic> playerData,
+  ) async {
     try {
       await firestore.collection('rooms').doc(roomId).update({
         'players': FieldValue.arrayRemove([playerData]),
