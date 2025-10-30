@@ -79,7 +79,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   Widget _buildPlayerList(List<Map<String, dynamic>> players) {
     if (players.isEmpty) {
-      return const Center(child: Text("Waiting for players..."));
+      return Center(child: Text("Waiting for players..."));
     }
 
     return ListView.builder(
@@ -89,10 +89,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
         final isCurrentUser = player['id'] == widget.playerId;
 
         return ListTile(
-          leading: const Icon(Icons.person),
+          leading: Icon(Icons.person),
           title: Text(player['name']),
           trailing: isCurrentUser
-              ? const Text(
+              ? Text(
                   "(You)",
                   style: TextStyle(
                     fontStyle: FontStyle.italic,
@@ -117,7 +117,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Lobby"),
+          title: Text("Lobby"),
           automaticallyImplyLeading: false,
         ),
         body: Column(
@@ -130,7 +130,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 ),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(child: CircularProgressIndicator());
                   }
                   return _buildPlayerList(snapshot.data!);
                 },
@@ -145,10 +145,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
                   vertical: 8,
                 ),
                 child: ElevatedButton.icon(
-                  key: const Key('startGameButton'),
+                  key: Key('startGameButton'),
                   onPressed: _startGame,
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text("Start Game"),
+                  icon: Icon(Icons.play_arrow),
+                  label: Text("Start Game"),
                 ),
               ),
 
@@ -156,9 +156,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                key: const Key('leaveRoomButton'),
+                key: Key('leaveRoomButton'),
                 onPressed: () => _leaveRoom(context),
-                child: const Text("Leave Room"),
+                child: Text("Leave Room"),
               ),
             ),
           ],

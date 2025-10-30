@@ -9,7 +9,7 @@ import '../test_utils.dart'; // ✅ used for error matchers
 void main() {
   group('TrickPlayPhase', () {
     TrickPlayPhase makePhase() =>
-        TrickPlayPhase(validator: const TrickPlayValidator());
+        TrickPlayPhase(validator: TrickPlayValidator());
 
     GameState makeState({
       required List<String> ids,
@@ -25,7 +25,7 @@ void main() {
       return GameState(
         players: players,
         currentPlayerIndex: currentIndex,
-        currentTrick: trick ?? const Trick(),
+        currentTrick: trick ?? Trick(),
         trumpSuit: trumpSuit,
       );
     }

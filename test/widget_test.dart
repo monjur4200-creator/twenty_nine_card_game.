@@ -88,12 +88,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('startGameButton')), findsOneWidget);
-      expect(find.byKey(const Key('createRoomButton')), findsOneWidget);
-      expect(find.byKey(const Key('roomIdField')), findsOneWidget);
-      expect(find.byKey(const Key('joinRoomButton')), findsOneWidget);
-      expect(find.byKey(const Key('rulesButton')), findsOneWidget);
-      expect(find.byKey(const Key('settingsButton')), findsOneWidget);
+      expect(find.byKey(Key('startGameButton')), findsOneWidget);
+      expect(find.byKey(Key('createRoomButton')), findsOneWidget);
+      expect(find.byKey(Key('roomIdField')), findsOneWidget);
+      expect(find.byKey(Key('joinRoomButton')), findsOneWidget);
+      expect(find.byKey(Key('rulesButton')), findsOneWidget);
+      expect(find.byKey(Key('settingsButton')), findsOneWidget);
     });
 
     testWidgets('Game screen shows correct title', (WidgetTester tester) async {
@@ -114,7 +114,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('startGameButton')));
+      await tester.tap(find.byKey(Key('startGameButton')));
       await tester.pumpAndSettle();
       expect(find.text('Twenty Nine - Game Table'), findsOneWidget);
     });
@@ -130,7 +130,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('createRoomButton')));
+      await tester.tap(find.byKey(Key('createRoomButton')));
       await tester.pumpAndSettle();
       expect(find.text('Lobby'), findsOneWidget);
     });
@@ -147,10 +147,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.byKey(const Key('roomIdField')),
+        find.byKey(Key('roomIdField')),
         'test-room-123',
       );
-      await tester.tap(find.byKey(const Key('joinRoomButton')));
+      await tester.tap(find.byKey(Key('joinRoomButton')));
       await tester.pumpAndSettle();
       expect(find.text('Lobby'), findsOneWidget);
     });
@@ -166,9 +166,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('createRoomButton')));
+      await tester.tap(find.byKey(Key('createRoomButton')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('leaveRoomButton')));
+      await tester.tap(find.byKey(Key('leaveRoomButton')));
       await tester.pumpAndSettle();
       expect(find.text('Main Menu'), findsOneWidget);
     });

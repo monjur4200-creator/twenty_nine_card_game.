@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BiddingScreen extends StatefulWidget {
-  const BiddingScreen({super.key});
+  const BiddingScreen({super.key}); // 👈 const constructor belongs here
 
   @override
   State<BiddingScreen> createState() => _BiddingScreenState();
@@ -23,9 +23,9 @@ class _BiddingScreenState extends State<BiddingScreen> {
   }
 
   void _confirmBid() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Bid confirmed: $_currentBid")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Bid confirmed: $_currentBid")),
+    );
     Navigator.pop(context); // go back to Game Screen
   }
 

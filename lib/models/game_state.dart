@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'player.dart';
-import 'card.dart';
+import 'card.dart'; // defines Card29 + Suit
 import 'trick.dart';
 import 'package:twenty_nine_card_game/models/utils/firestore_helpers.dart';
 import 'package:twenty_nine_card_game/game_logic/game_errors.dart';
@@ -40,9 +41,6 @@ class GameState {
 
   void startNewRound() {
     roundNumber++;
-
-    // Purge any empty tricks left over
-    tricksHistory.removeWhere((t) => t.plays.isEmpty);
     tricksHistory.clear();
 
     highestBidder = null;
@@ -100,8 +98,7 @@ class GameState {
     // Start a new trick only if the last one is complete
     if (tricksHistory.isEmpty ||
         tricksHistory.last.plays.length == players.length) {
-      // Don’t create a trick if the player has no cards left (end of round)
-      if (player.hand.isEmpty) return;
+      if (player.hand.isEmpty) return; // end of round
       tricksHistory.add(Trick());
     }
 
@@ -129,7 +126,6 @@ class GameState {
 
   // --- Scoring ---
 
-  /// Pure calculation of team scores (does not mutate state).
   Map<int, int> calculateTeamScores() {
     final scores = <int, int>{};
     for (var player in players) {
@@ -138,12 +134,10 @@ class GameState {
     return scores;
   }
 
-  /// Recalculate and update teamScores field.
   void updateTeamScores() {
     teamScores = calculateTeamScores();
   }
 
-  /// Check if bidding team met their target score.
   bool didBiddingTeamWin() {
     if (highestBidder == null) return false;
     updateTeamScores();
@@ -153,16 +147,13 @@ class GameState {
 
   void printRoundSummary() {
     // ignore: avoid_print
-    print('Round $roundNumber Summary');
-
+    debugPrint('Round $roundNumber Summary');
     for (var player in players) {
       // ignore: avoid_print
-      print(
-        '${player.name}: Tricks ${player.tricksWon}, Score ${player.score}',
-      );
+      debugPrint('${player.name}: Tricks ${player.tricksWon}, Score ${player.score}');
     }
     // ignore: avoid_print
-    print('Team Scores: $teamScores');
+    debugPrint('Team Scores: $teamScores');
   }
 
   // --- Serialization ---
@@ -188,10 +179,8 @@ class GameState {
     final trumpSuit = trumpName != null ? Suit.values.byName(trumpName) : null;
 
     final tricks = (map['tricksHistory'] as List<dynamic>? ?? [])
-        .map(
-          (trickMap) =>
-              Trick.fromMap(Map<String, dynamic>.from(trickMap), allPlayers),
-        )
+        .map((trickMap) =>
+            Trick.fromMap(Map<String, dynamic>.from(trickMap), allPlayers))
         .toList();
 
     final highestBidderId = (map['highestBidder'] as num?)?.toInt();
@@ -219,8 +208,16 @@ class GameState {
 
   // --- Game Finalization ---
 
-  /// Clears any leftover tricks at the end of the game.
   void finalizeGame() {
     tricksHistory.clear();
+  }
+
+  // --- Bot AI Support ---
+
+  // Returns true if a card is legal to play in the current state.
+  bool isLegalMove(Card29 card) {
+    // TODO: implement full rule logic (follow suit, trump rules, etc.)
+    // For now, assume any card in hand is legal.
+    return players.any((p) => p.hand.contains(card));
   }
 }

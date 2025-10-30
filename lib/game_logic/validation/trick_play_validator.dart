@@ -2,7 +2,7 @@ import '../game_errors.dart';
 import '../phases/trick_play_phase.dart' show GameState, Card;
 
 class TrickPlayValidator {
-  const TrickPlayValidator();
+  TrickPlayValidator();
 
   void ensureLegalPlay({
     required GameState state,

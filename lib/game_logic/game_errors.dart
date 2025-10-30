@@ -19,7 +19,7 @@ class GameError implements Exception {
   final String message;
   final Map<String, Object?> context;
 
-  const GameError({
+  GameError({
     required this.code,
     required this.message,
     this.context = const {},

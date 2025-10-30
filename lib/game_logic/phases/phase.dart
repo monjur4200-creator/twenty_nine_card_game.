@@ -23,5 +23,5 @@ class PhaseAction {
   final String type; // e.g., 'play_card', 'reveal_trump'
   final Map<String, Object?> payload;
 
-  const PhaseAction(this.type, {this.payload = const {}});
+  PhaseAction(this.type, {this.payload = const {}});
 }

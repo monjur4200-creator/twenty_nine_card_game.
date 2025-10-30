@@ -16,6 +16,8 @@ class Player {
 
   Player({required this.id, required this.name, required this.teamId});
 
+  // --- Hand Management ---
+
   void addCard(Card29 card) => _hand.add(card);
 
   void addCards(List<Card29> cards) => _hand.addAll(cards);
@@ -30,6 +32,14 @@ class Player {
 
   void clearHand() => _hand.clear();
 
+  /// ✅ Test helper: replace the player's hand with a fixed set of cards.
+  void setHandForTest(List<Card29> cards) {
+    clearHand();
+    addCards(cards);
+  }
+
+  // --- Score & Round Management ---
+
   void incrementScore(int points) => score += points;
 
   void incrementTricksWon() => tricksWon++;
@@ -40,11 +50,7 @@ class Player {
     // score persists across rounds
   }
 
-  /// ✅ Test helper: replace the player's hand with a fixed set of cards.
-  void setHandForTest(List<Card29> cards) {
-    clearHand();
-    addCards(cards);
-  }
+  // --- Serialization ---
 
   Map<String, dynamic> toMap() => {
         'id': id,
@@ -75,9 +81,11 @@ class Player {
     return player;
   }
 
+  // --- Debugging & Equality ---
+
   @override
   String toString() =>
-      'Player($id, $name, team $teamId, score $score, tricks $tricksWon)';
+      'Player($id, $name, team $teamId, score $score, tricks $tricksWon, hand=$_hand)';
 
   @override
   bool operator ==(Object other) =>

@@ -99,7 +99,7 @@ class RoomModel {
 class LobbyModel {
   final List<RoomModel> rooms;
 
-  const LobbyModel({this.rooms = const []});
+  LobbyModel({this.rooms = const []});
 
   factory LobbyModel.fromMap(Map<String, dynamic> map) {
     final roomList = (map['rooms'] as List<dynamic>? ?? [])

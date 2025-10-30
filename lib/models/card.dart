@@ -8,7 +8,7 @@ class Card29 {
   final bool isTrump;
   final bool isPlayed;
 
-  const Card29(
+  Card29(
     this.suit,
     this.rank, {
     this.isTrump = false,

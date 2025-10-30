@@ -6,14 +6,14 @@ class RoundSummary extends StatelessWidget {
   final int team1Score;
   final int team2Score;
   final int roundNumber;
-  final FirebaseService firebaseService; // ✅ add this
+  final FirebaseService firebaseService;
 
   const RoundSummary({
     super.key,
-    this.team1Score = 0,
-    this.team2Score = 0,
-    this.roundNumber = 1,
-    required this.firebaseService, // ✅ required
+    required this.team1Score,
+    required this.team2Score,
+    required this.roundNumber,
+    required this.firebaseService,
   });
 
   @override
@@ -65,7 +65,7 @@ class RoundSummary extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => MainMenu(
                       firebaseService: firebaseService,
-                    ), // ✅ pass service
+                    ),
                   ),
                   (route) => false,
                 );

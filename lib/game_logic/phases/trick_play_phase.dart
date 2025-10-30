@@ -9,13 +9,13 @@ import 'phase.dart';
 class Card {
   final String suit; // 'S','H','D','C'
   final int rank; // 2..14 (Ace=14)
-  const Card(this.suit, this.rank);
+  Card(this.suit, this.rank);
 }
 
 class PlayerState {
   final String id;
   final List<Card> hand;
-  const PlayerState({required this.id, required this.hand});
+  PlayerState({required this.id, required this.hand});
 
   PlayerState removeCard(Card c) =>
       PlayerState(id: id, hand: hand.whereNot((x) => x == c).toList());
@@ -24,7 +24,7 @@ class PlayerState {
 class Trick {
   final String? leadSuit;
   final List<Map<String, Object?>> plays; // [{playerId, card}]
-  const Trick({this.leadSuit, this.plays = const []});
+  Trick({this.leadSuit, this.plays = const []});
 
   Trick addPlay(String playerId, Card card) {
     final newLeadSuit = leadSuit ?? card.suit;
@@ -46,7 +46,7 @@ class GameState {
   final Trick currentTrick;
   final String? trumpSuit;
 
-  const GameState({
+  GameState({
     required this.players,
     required this.currentPlayerIndex,
     required this.currentTrick,
@@ -83,7 +83,7 @@ class TrickPlayPhase extends Phase<GameState> {
   bool _active = false;
 
   TrickPlayPhase({TrickPlayValidator? validator})
-    : validator = validator ?? const TrickPlayValidator();
+    : validator = validator ?? TrickPlayValidator();
 
   @override
   String get name => 'TrickPlay';
@@ -174,7 +174,7 @@ class TrickPlayPhase extends Phase<GameState> {
       return GameState(
         players: state.players,
         currentPlayerIndex: state.currentPlayerIndex,
-        currentTrick: const Trick(), // reset for next trick
+        currentTrick: Trick(), // reset for next trick
         trumpSuit: state.trumpSuit,
       );
     }
@@ -182,7 +182,7 @@ class TrickPlayPhase extends Phase<GameState> {
     return GameState(
       players: state.players,
       currentPlayerIndex: winnerIndex,
-      currentTrick: const Trick(), // reset for next trick
+      currentTrick: Trick(), // reset for next trick
       trumpSuit: state.trumpSuit,
     );
   }

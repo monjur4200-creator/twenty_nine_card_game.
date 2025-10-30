@@ -77,8 +77,8 @@ class _MainMenuState extends State<MainMenu> {
                 ElevatedButton(
                   key: const Key('createRoomButton'),
                   onPressed: () async {
-                    final roomId = DateTime.now().millisecondsSinceEpoch
-                        .toString();
+                    final roomId =
+                        DateTime.now().millisecondsSinceEpoch.toString();
                     final playerId = _uuid.v4();
                     const displayName = "Player 1";
 

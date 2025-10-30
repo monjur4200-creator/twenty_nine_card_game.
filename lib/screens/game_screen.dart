@@ -13,7 +13,10 @@ import '../services/firebase_service.dart';
 class GameScreen extends StatefulWidget {
   final FirebaseService firebaseService; // ✅ required service
 
-  const GameScreen({super.key, required this.firebaseService});
+  const GameScreen({
+    super.key,
+    required this.firebaseService,
+  });
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -304,7 +307,7 @@ class _GameScreenState extends State<GameScreen> {
               label: const Text('Go to Round Summary'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.purple,
+                                backgroundColor: Colors.purple,
               ),
             ),
             const SizedBox(height: 20),

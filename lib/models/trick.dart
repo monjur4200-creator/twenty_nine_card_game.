@@ -10,6 +10,10 @@ class Trick {
 
   Trick({this.turnOrder});
 
+  /// The suit of the first card played in this trick (lead suit).
+  Suit? get leadSuit =>
+      plays.isNotEmpty ? plays.entries.first.value.suit : null;
+
   void addPlay(Player player, Card29 card) {
     // ✅ Prevent same player playing twice
     if (plays.containsKey(player)) {

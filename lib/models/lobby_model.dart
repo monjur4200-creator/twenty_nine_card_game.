@@ -3,7 +3,7 @@ import 'room_models.dart';
 class LobbyModel {
   final List<RoomModel> rooms;
 
-  const LobbyModel({this.rooms = const []});
+  LobbyModel({this.rooms = const []});
 
   /// Deserialize from Firestore or local map
   factory LobbyModel.fromMap(Map<String, dynamic> map) {
