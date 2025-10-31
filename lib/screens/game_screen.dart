@@ -194,7 +194,10 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Twenty Nine - Game Table'),
+        title: const Text(
+          'Twenty Nine - Game Table',
+          key: Key('gameScreenTitle'), // 👈 Added for test
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -210,130 +213,136 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
       ),
-      body: Container(
-        color: Colors.green[100],
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // --- Connection Status Bar ---
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: _connectionStatus.startsWith("Connected")
-                    ? Colors.green[300]
-                    : Colors.red[300],
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                _connectionStatus,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // --- Run Simulation Button ---
-            ElevatedButton.icon(
-              onPressed: runGameSimulation,
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Run Game Simulation'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // --- Multiplayer Connect Button ---
-            ElevatedButton.icon(
-              onPressed: _showDevicePicker,
-              icon: const Icon(Icons.wifi_tethering),
-              label: const Text('Connect (Multiplayer)'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.blue,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // --- Disconnect Button ---
-            ElevatedButton.icon(
-              onPressed: _disconnect,
-              icon: const Icon(Icons.link_off),
-              label: const Text('Disconnect'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.red,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // --- Navigate to Bidding Screen ---
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const BiddingScreen()),
-                );
-              },
-              icon: const Icon(Icons.gavel),
-              label: const Text('Go to Bidding Screen'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.orange,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // --- Navigate to Round Summary ---
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => RoundSummary(
-                      team1Score: team1Score,
-                      team2Score: team2Score,
-                      roundNumber: roundNumber,
-                      firebaseService: widget.firebaseService, // ✅ pass service
-                    ),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.summarize),
-              label: const Text('Go to Round Summary'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                                backgroundColor: Colors.purple,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // --- Results Log ---
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(12),
+      body: SafeArea(
+        child: Container(
+          color: Colors.green[100],
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // --- Connection Status Bar ---
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black26),
-                  borderRadius: BorderRadius.circular(8),
+                  color: _connectionStatus.startsWith("Connected")
+                      ? Colors.green[400]
+                      : Colors.red[400],
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: SingleChildScrollView(
-                  child: Text(
-                    resultText,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.4,
-                      fontFamily: 'monospace', // gives it a "log" feel
+                child: Text(
+                  _connectionStatus,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // --- Action Buttons ---
+              ElevatedButton.icon(
+                onPressed: runGameSimulation,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Run Game Simulation'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              ElevatedButton.icon(
+                onPressed: _showDevicePicker,
+                icon: const Icon(Icons.wifi_tethering),
+                label: const Text('Connect (Multiplayer)'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              ElevatedButton.icon(
+                onPressed: _disconnect,
+                icon: const Icon(Icons.link_off),
+                label: const Text('Disconnect'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BiddingScreen()),
+                  );
+                },
+                icon: const Icon(Icons.gavel),
+                label: const Text('Go to Bidding Screen'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+                            ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RoundSummary(
+                        team1Score: team1Score,
+                        team2Score: team2Score,
+                        roundNumber: roundNumber,
+                        firebaseService: widget.firebaseService,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.summarize),
+                label: const Text('Go to Round Summary'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  backgroundColor: Colors.purple,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // --- Results Log ---
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.black26),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      reverse: true, // auto-scroll to bottom
+                      child: SelectableText(
+                        resultText,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.4,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

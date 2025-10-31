@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
+
 import 'package:twenty_nine_card_game/main.dart';
-import 'package:twenty_nine_card_game/services/firebase_service.dart';
 import 'package:twenty_nine_card_game/screens/game_screen.dart';
+import 'package:twenty_nine_card_game/services/firebase_service.dart';
 import 'package:twenty_nine_card_game/services/presence_service.dart';
 import 'package:twenty_nine_card_game/services/room_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Fake PresenceService that never touches Firebase
 class FakePresenceService implements PresenceService {
@@ -25,7 +25,7 @@ class FakePresenceService implements PresenceService {
 
 /// Fake RoomService that never touches Firebase
 class FakeRoomService implements RoomService {
-  final FakeFirebaseFirestore _fakeFirestore = FakeFirebaseFirestore();
+  final FakeFirebaseFirestore fakeFirestore = FakeFirebaseFirestore();
 
   @override
   Stream<Map<String, dynamic>> listenToRoom(String r) async* {
@@ -48,7 +48,10 @@ class FakeRoomService implements RoomService {
   Future<void> deleteRoom(String roomId) async {}
 
   @override
-  FirebaseFirestore get firestore => _fakeFirestore;
+  Future<Map<String, dynamic>> getRoom(String roomId) async => {};
+
+  @override
+  Future<void> leaveRoom(String roomId, Map<String, dynamic> playerData) async {}
 }
 
 void main() {
@@ -58,7 +61,7 @@ void main() {
 
   setUp(() {
     final fakeFirestore = FakeFirebaseFirestore();
-    final mockAuth = MockFirebaseAuth(); // ✅ mock auth instead of real
+    final mockAuth = MockFirebaseAuth();
     fakeService = FirebaseService(auth: mockAuth, firestore: fakeFirestore);
     fakePresence = FakePresenceService();
     fakeRoom = FakeRoomService();
@@ -74,12 +77,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Main Menu'), findsOneWidget);
+      expect(find.byKey(const Key('mainMenuTitle')), findsOneWidget);
     });
 
-    testWidgets('Main Menu shows all expected buttons and fields', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Main Menu shows all expected buttons and fields',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -88,24 +90,25 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byKey(Key('startGameButton')), findsOneWidget);
-      expect(find.byKey(Key('createRoomButton')), findsOneWidget);
-      expect(find.byKey(Key('roomIdField')), findsOneWidget);
-      expect(find.byKey(Key('joinRoomButton')), findsOneWidget);
-      expect(find.byKey(Key('rulesButton')), findsOneWidget);
-      expect(find.byKey(Key('settingsButton')), findsOneWidget);
+      expect(find.byKey(const Key('startGameButton')), findsOneWidget);
+      expect(find.byKey(const Key('createRoomButton')), findsOneWidget);
+      expect(find.byKey(const Key('roomIdField')), findsOneWidget);
+      expect(find.byKey(const Key('joinRoomButton')), findsOneWidget);
+      expect(find.byKey(const Key('rulesButton')), findsOneWidget);
+      expect(find.byKey(const Key('settingsButton')), findsOneWidget);
     });
 
-    testWidgets('Game screen shows correct title', (WidgetTester tester) async {
+    testWidgets('Game screen shows correct title',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(home: GameScreen(firebaseService: fakeService)),
       );
-      expect(find.text('Twenty Nine - Game Table'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('gameScreenTitle')), findsOneWidget);
     });
 
-    testWidgets('Tapping Start Game navigates to GameScreen', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Tapping Start Game navigates to GameScreen',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -114,14 +117,13 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(Key('startGameButton')));
+      await tester.tap(find.byKey(const Key('startGameButton')));
       await tester.pumpAndSettle();
-      expect(find.text('Twenty Nine - Game Table'), findsOneWidget);
+      expect(find.byKey(const Key('gameScreenTitle')), findsOneWidget);
     });
 
-    testWidgets('Tapping Create Room navigates to LobbyScreen', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Tapping Create Room navigates to LobbyScreen',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -130,14 +132,13 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(Key('createRoomButton')));
+      await tester.tap(find.byKey(const Key('createRoomButton')));
       await tester.pumpAndSettle();
-      expect(find.text('Lobby'), findsOneWidget);
+      expect(find.byKey(const Key('lobbyTitle')), findsOneWidget);
     });
 
-    testWidgets('Tapping Join Room navigates to LobbyScreen', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Tapping Join Room navigates to LobbyScreen',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -147,17 +148,16 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.byKey(Key('roomIdField')),
+        find.byKey(const Key('roomIdField')),
         'test-room-123',
       );
-      await tester.tap(find.byKey(Key('joinRoomButton')));
+      await tester.tap(find.byKey(const Key('joinRoomButton')));
       await tester.pumpAndSettle();
-      expect(find.text('Lobby'), findsOneWidget);
+      expect(find.byKey(const Key('lobbyTitle')), findsOneWidget);
     });
 
-    testWidgets('Tapping Leave Room navigates back to Main Menu', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('Tapping Leave Room navigates back to Main Menu',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
@@ -166,11 +166,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(Key('createRoomButton')));
+      await tester.tap(find.byKey(const Key('createRoomButton')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(Key('leaveRoomButton')));
+      await tester.tap(find.byKey(const Key('leaveRoomButton')));
       await tester.pumpAndSettle();
-      expect(find.text('Main Menu'), findsOneWidget);
+      expect(find.byKey(const Key('mainMenuTitle')), findsOneWidget);
     });
   });
 }

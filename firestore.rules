@@ -1,0 +1,29 @@
+// firestore.rules (conceptual, not exhaustive)
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Rooms
+    match /rooms/{roomId} {
+      allow read, write: if request.auth != null;
+
+      match /chats/{channel} {
+        match /messages/{messageId} {
+          allow read, write: if request.auth != null;
+        }
+      }
+    }
+
+    // Users friends chat
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /friends/{friendId} {
+        match /messages/{messageId} {
+          allow read, write: if request.auth != null &&
+                             (request.auth.uid == userId || request.auth.uid == friendId);
+        }
+      }
+    }
+  }
+}

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../services/presence_service.dart';
 import '../services/room_service.dart';
 import '../services/firebase_service.dart';
 import 'main_menu.dart';
+import 'game_screen.dart';
+import 'package:twenty_nine_card_game/services/presence_service.dart';
 
 class LobbyScreen extends StatefulWidget {
   final String roomId;
@@ -12,17 +14,15 @@ class LobbyScreen extends StatefulWidget {
   final PresenceService presenceService;
   final RoomService roomService;
 
-  LobbyScreen({
-    // 👈 removed "const"
+  const LobbyScreen({
     super.key,
     required this.roomId,
     required this.playerId,
     required this.playerName,
     required this.firebaseService,
-    PresenceService? presenceService,
-    RoomService? roomService,
-  }) : presenceService = presenceService ?? PresenceService(),
-       roomService = roomService ?? RoomService();
+    required this.presenceService,
+    required this.roomService,
+  });
 
   @override
   State<LobbyScreen> createState() => _LobbyScreenState();
@@ -30,35 +30,56 @@ class LobbyScreen extends StatefulWidget {
 
 class _LobbyScreenState extends State<LobbyScreen> {
   String? _hostId;
+  StreamSubscription<Map<String, dynamic>>? _roomSub;
 
   @override
   void initState() {
     super.initState();
 
-    // Mark this player as present in the room
     widget.presenceService.setPlayerPresence(
       widget.roomId,
       widget.playerId,
       widget.playerName,
     );
 
-    // Listen to room metadata to know who the host is
-    widget.roomService.listenToRoom(widget.roomId).listen((roomData) {
-      if (roomData.isNotEmpty) {
+    _roomSub = widget.roomService.listenToRoom(widget.roomId).listen((roomData) {
+      if (roomData.isNotEmpty && mounted) {
         setState(() {
-          _hostId = roomData['hostId'];
+          _hostId = roomData['hostId'] as String?;
         });
+
+        // 🚀 Navigate to GameScreen when status == active
+        if (roomData['status'] == 'active') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => GameScreen(
+                firebaseService: widget.firebaseService,
+              ),
+            ),
+          );
+        }
       }
     });
   }
 
-  Future<void> _leaveRoom(BuildContext context) async {
+  @override
+  void dispose() {
+    _roomSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _leaveRoom() async {
     await widget.presenceService.removePlayer(
       widget.roomId,
       widget.playerId,
       widget.playerName,
     );
-    if (!context.mounted) return;
+    if (!mounted) return;
+    _navigateToMainMenu();
+  }
+
+  void _navigateToMainMenu() {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -74,12 +95,11 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   Future<void> _startGame() async {
     await widget.roomService.updateRoomStatus(widget.roomId, "active");
-    // Later: navigate to GameScreen when status == active
   }
 
   Widget _buildPlayerList(List<Map<String, dynamic>> players) {
     if (players.isEmpty) {
-      return Center(child: Text("Waiting for players..."));
+      return const Center(child: Text("Waiting for players..."));
     }
 
     return ListView.builder(
@@ -89,10 +109,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
         final isCurrentUser = player['id'] == widget.playerId;
 
         return ListTile(
-          leading: Icon(Icons.person),
-          title: Text(player['name']),
+          leading: const Icon(Icons.person),
+          title: Text(player['name'] ?? 'Unknown'),
           trailing: isCurrentUser
-              ? Text(
+              ? const Text(
                   "(You)",
                   style: TextStyle(
                     fontStyle: FontStyle.italic,
@@ -112,12 +132,14 @@ class _LobbyScreenState extends State<LobbyScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await _leaveRoom(context);
+        await _leaveRoom();
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Lobby"),
+          title: const Text(
+            "Lobby",
+            key: Key('lobbyTitle'), // 👈 smoke test expects this
+          ),
           automaticallyImplyLeading: false,
         ),
         body: Column(
@@ -129,8 +151,11 @@ class _LobbyScreenState extends State<LobbyScreen> {
                   widget.roomId,
                 ),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text("Waiting for players..."));
                   }
                   return _buildPlayerList(snapshot.data!);
                 },
@@ -140,15 +165,13 @@ class _LobbyScreenState extends State<LobbyScreen> {
             // --- Host-only Start Game Button ---
             if (isHost)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ElevatedButton.icon(
-                  key: Key('startGameButton'),
+                  key: const Key('startGameButton'),
                   onPressed: _startGame,
-                  icon: Icon(Icons.play_arrow),
-                  label: Text("Start Game"),
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text("Start Game"),
                 ),
               ),
 
@@ -156,9 +179,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                key: Key('leaveRoomButton'),
-                onPressed: () => _leaveRoom(context),
-                child: Text("Leave Room"),
+                key: const Key('leaveRoomButton'),
+                onPressed: _leaveRoom,
+                child: const Text("Leave Room"),
               ),
             ),
           ],
