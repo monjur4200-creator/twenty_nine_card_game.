@@ -34,7 +34,10 @@ dependencies:
 
   # Social login
   google_sign_in: ^6.1.6
-  flutter_facebook_auth: ^6.0.4
+  flutter_facebook_auth:
+    git:
+      url: https://github.com/monjur4200-creator/flutter-facebook-auth.git
+      ref: master
 
 dev_dependencies:
   flutter_test:
