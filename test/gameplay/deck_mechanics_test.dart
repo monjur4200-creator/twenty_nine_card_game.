@@ -42,8 +42,8 @@ void main() {
     });
 
     test('Matching logic (same rank)', () {
-      final card1 = CardModel(rank: 9, suit: Suit.clubs);
-      final card2 = CardModel(rank: 9, suit: Suit.hearts);
+      const card1 = CardModel(rank: 9, suit: Suit.clubs);
+      const card2 = CardModel(rank: 9, suit: Suit.hearts);
 
       expect(card1.rank, equals(card2.rank));
       expect(card1.suit, isNot(equals(card2.suit)));

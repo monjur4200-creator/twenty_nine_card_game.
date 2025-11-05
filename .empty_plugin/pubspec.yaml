@@ -1,0 +1,13 @@
+name: facebook_auth_desktop
+description: Dummy plugin to silence macOS override
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=2.12.0 <4.0.0'
+
+flutter:
+  plugin:
+    platforms:
+      macos:
+        pluginClass: FacebookAuthDesktopPlugin

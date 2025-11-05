@@ -7,10 +7,10 @@ import 'package:twenty_nine_card_game/widgets/card_loader.dart';
 void main() {
   group('Card UI interactions', () {
     testWidgets('Card renders correctly in UI', (tester) async {
-      final card = CardModel(rank: 9, suit: Suit.clubs);
+      const card = CardModel(rank: 9, suit: Suit.clubs);
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: CardLoader(card: card),
           ),
@@ -23,14 +23,14 @@ void main() {
 
     testWidgets('Card responds to tap', (tester) async {
       bool tapped = false;
-      final card = CardModel(rank: 7, suit: Suit.hearts);
+      const card = CardModel(rank: 7, suit: Suit.hearts);
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: GestureDetector(
               onTap: () => tapped = true,
-              child: CardLoader(card: card),
+              child: const CardLoader(card: card),
             ),
           ),
         ),
@@ -43,10 +43,10 @@ void main() {
     });
 
     testWidgets('Card can be dragged', (tester) async {
-      final card = CardModel(rank: 5, suit: Suit.spades);
+      const card = CardModel(rank: 5, suit: Suit.spades);
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Draggable<CardModel>(
               data: card,
@@ -65,7 +65,7 @@ void main() {
     });
 
     testWidgets('Card flip animation works', (tester) async {
-      final card = CardModel(rank: 12, suit: Suit.diamonds);
+      const card = CardModel(rank: 12, suit: Suit.diamonds);
 
       await tester.pumpWidget(
         MaterialApp(
@@ -79,7 +79,7 @@ void main() {
       );
 
       // Trigger flip by changing key
-      final newCard = CardModel(rank: 1, suit: Suit.spades);
+      const newCard = CardModel(rank: 1, suit: Suit.spades);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

@@ -64,7 +64,7 @@ void main() {
       for (int i = 0; i < 3; i++) {
         final filePath = '${tempDir.path}/latest_$i.csv';
         await exportWinCountsToCsv(filePath, [counts]);
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
       }
 
       final output = '${tempDir.path}/latestN.csv';

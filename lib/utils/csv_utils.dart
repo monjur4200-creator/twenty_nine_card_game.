@@ -36,7 +36,7 @@ Future<void> exportWinCountsToCsv(
     ]);
   }
 
-  final csv = ListToCsvConverter().convert(rows);
+  final csv = const ListToCsvConverter().convert(rows);
   final file = File(filePath);
   await file.writeAsString(csv);
 }
@@ -52,7 +52,7 @@ Future<void> mergeCsvFiles(List<String> inputPaths, String outputPath) async {
     if (!file.existsSync()) continue;
 
     final content = await file.readAsString();
-    final rows = CsvToListConverter().convert(content);
+    final rows = const CsvToListConverter().convert(content);
 
     if (i == 0) {
       mergedRows.addAll(rows); // include header
@@ -61,7 +61,7 @@ Future<void> mergeCsvFiles(List<String> inputPaths, String outputPath) async {
     }
   }
 
-  final csv = ListToCsvConverter().convert(mergedRows);
+  final csv = const ListToCsvConverter().convert(mergedRows);
   final outFile = File(outputPath);
   await outFile.writeAsString(csv);
 }

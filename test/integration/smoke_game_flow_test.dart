@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twenty_nine_card_game/models/game_state.dart';
 import 'package:twenty_nine_card_game/models/player.dart';
-import 'package:twenty_nine_card_game/models/card.dart';
+import 'package:twenty_nine_card_game/models/card29.dart';
+import 'package:twenty_nine_card_game/models/login_method.dart';
+import 'package:twenty_nine_card_game/models/connection_type.dart';
 
 void main() {
   group('Smoke test: quick multi-round randomized play', () {
@@ -74,10 +76,10 @@ void main() {
 
     setUp(() {
       players = [
-        Player(id: 1, name: 'Alice', teamId: 1),
-        Player(id: 2, name: 'Bob', teamId: 2),
-        Player(id: 3, name: 'Charlie', teamId: 1),
-        Player(id: 4, name: 'Dave', teamId: 2),
+        Player(id: 1, name: 'Alice', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 2, name: 'Bob', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 3, name: 'Charlie', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 4, name: 'Dave', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
       ];
       gameState = GameState(players);
     });
@@ -140,7 +142,6 @@ void main() {
         gameState.updateTeamScores();
         expect(gameState.teamScores.length, equals(2));
 
-        // ✅ Rule-based bidding outcome
         expect(gameState.highestBidder, isNotNull);
         final biddingTeam = gameState.highestBidder!.teamId;
         final biddingTarget = gameState.targetScore;
@@ -152,7 +153,7 @@ void main() {
 
         final printLog = <String>[];
         final spec = ZoneSpecification(
-          print: (_, _, _, msg) {
+          print: (self, parent, zone, msg) {
             printLog.add(msg);
           },
         );

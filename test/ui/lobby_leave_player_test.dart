@@ -8,6 +8,7 @@ import 'package:twenty_nine_card_game/main.dart';
 import 'package:twenty_nine_card_game/services/firebase_service.dart';
 import 'package:twenty_nine_card_game/services/presence_service.dart';
 import 'package:twenty_nine_card_game/services/room_service.dart';
+import 'package:twenty_nine_card_game/localization/strings.dart';
 
 /// Fake PresenceService that lets us simulate players joining/leaving
 class TestableFakePresenceService implements PresenceService {
@@ -78,36 +79,30 @@ void main() {
   });
 
   group('Lobby Leave Player Test', () {
-    testWidgets('Lobby updates when a player leaves',
-        (WidgetTester tester) async {
+    testWidgets('Lobby updates when a player leaves', (WidgetTester tester) async {
       await tester.pumpWidget(
         TwentyNineApp(
           firebaseService: fakeService,
           presenceService: fakePresence,
           roomService: fakeRoom,
+          strings: Strings('en'),
         ),
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-
-      // Navigate to Lobby
       await tester.tap(find.byKey(const Key('createRoomButton')));
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Simulate two players joining
       await fakePresence.setPlayerPresence('room1', 'p1', 'Mongur');
       await fakePresence.setPlayerPresence('room1', 'p2', 'Ada');
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Verify both appear
       expect(find.text('Mongur'), findsOneWidget);
       expect(find.text('Ada'), findsOneWidget);
 
-      // Simulate one leaving
       await fakePresence.removePlayer('room1', 'p1', 'Mongur');
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Verify Mongur is gone, Ada remains
       expect(find.text('Mongur'), findsNothing);
       expect(find.text('Ada'), findsOneWidget);
     });

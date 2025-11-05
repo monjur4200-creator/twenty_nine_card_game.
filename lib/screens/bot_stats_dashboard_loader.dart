@@ -53,10 +53,10 @@ class _BotStatsDashboardLoaderState extends State<BotStatsDashboardLoader> {
     if (_runs == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Bot Stats Dashboard'),
+          title: const Text('Bot Stats Dashboard'),
           actions: [
             IconButton(
-              icon: Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh),
               onPressed: _loadLatest,
             ),
           ],
@@ -64,7 +64,7 @@ class _BotStatsDashboardLoaderState extends State<BotStatsDashboardLoader> {
         body: Center(
           child: ElevatedButton(
             onPressed: _pickFile,
-            child: Text('Pick CSV File'),
+            child: const Text('Pick CSV File'),
           ),
         ),
       );
@@ -75,11 +75,11 @@ class _BotStatsDashboardLoaderState extends State<BotStatsDashboardLoader> {
         title: Text('Bot Stats Dashboard (${_currentFile?.path.split('/').last})'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _loadLatest,
           ),
           IconButton(
-            icon: Icon(Icons.folder_open),
+            icon: const Icon(Icons.folder_open),
             onPressed: _pickFile,
           ),
         ],

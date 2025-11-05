@@ -1,21 +1,33 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/player.dart';
-import '../models/card.dart';
+import '../models/card29.dart';
 import '../models/game_state.dart';
-import 'bidding_screen.dart';
-import 'round_summary.dart';
+import '../models/connection_type.dart';
+import '../models/login_method.dart';
 
-// Multiplayer sync service (Bluetooth/local)
-import '../services/sync_service.dart';
+import '../services/sync_service_interface.dart';
 import '../services/firebase_service.dart';
+import '../localization/strings.dart';
+
+import 'round_summary.dart';
+import 'package:twenty_nine_card_game/ui/dealing_animation.dart';
+import 'package:twenty_nine_card_game/ui/trick_reveal.dart';
+import 'package:twenty_nine_card_game/ui/feedback_pulse.dart';
 
 class GameScreen extends StatefulWidget {
-  final FirebaseService firebaseService; // ✅ required service
+  final FirebaseService firebaseService;
+  final Strings strings;
+  final Player player;
+  final SyncService syncService;
 
   const GameScreen({
     super.key,
     required this.firebaseService,
+    required this.strings,
+    required this.player,
+    required this.syncService,
   });
 
   @override
@@ -23,21 +35,88 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  String resultText = 'Tap "Run Game Simulation" to see results';
+  String resultText = '';
   int team1Score = 0;
   int team2Score = 0;
   int roundNumber = 1;
 
-  final SyncService _syncService = SyncService();
   String _connectionStatus = "Not connected";
+  final GlobalKey<DealingAnimationState> _dealingKey = GlobalKey<DealingAnimationState>();
 
-  // --- Game Simulation ---
+  List<Card29> _lastTrickCards = [];
+  String _lastTrickWinnerId = '';
+  bool _showBidPulse = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    resultText = widget.strings.simulationPrompt;
+
+    widget.syncService.onConnected(() {
+      if (!mounted) return;
+      setState(() {
+        _connectionStatus = "Connected";
+      });
+    });
+
+    widget.syncService.onDisconnected(() {
+      if (!mounted) return;
+      setState(() {
+        _connectionStatus = "Disconnected";
+      });
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text(widget.strings.disconnected),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    });
+
+    widget.syncService.onLagDetected(() {
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text("⚠️ Connection lag detected"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+
+    widget.syncService.onResync(() {
+      final ctx = context;
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text("🔄 Resyncing game state..."),
+          backgroundColor: Colors.blue,
+        ),
+      );
+      widget.syncService.sendGameState({
+        'player': widget.player.name,
+        'score': widget.player.score,
+        'round': roundNumber,
+      });
+    });
+
+    widget.syncService.startHeartbeat();
+  }
+
+  @override
+  void dispose() {
+    widget.syncService.disconnect();
+    super.dispose();
+  }
+
   void runGameSimulation() {
     final players = [
-      Player(id: 1, name: 'Mongur', teamId: 1),
-      Player(id: 2, name: 'Rafi', teamId: 2),
-      Player(id: 3, name: 'Tuli', teamId: 1),
-      Player(id: 4, name: 'Nayeem', teamId: 2),
+      widget.player,
+      Player(id: 2, name: 'Rafi', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.bluetooth),
+      Player(id: 3, name: 'Tuli', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.bluetooth),
+      Player(id: 4, name: 'Nayeem', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.bluetooth),
     ];
 
     final game = GameState(players);
@@ -52,7 +131,6 @@ class _GameScreenState extends State<GameScreen> {
 
     game.revealTrump(Suit.hearts);
 
-    // Play a few tricks
     for (int trickNumber = 1; trickNumber <= 3; trickNumber++) {
       for (var player in game.players) {
         final cardToPlay = player.hand.isNotEmpty ? player.hand.first : null;
@@ -60,15 +138,25 @@ class _GameScreenState extends State<GameScreen> {
           game.playCard(player, cardToPlay);
         }
       }
+
+      _lastTrickCards = game.currentTrick?.cards ?? [];
+      _lastTrickWinnerId = game.getTrickWinner()?.name ?? '';
+      _showBidPulse = true;
+
+      showDialog(
+        context: context,
+        builder: (_) => TrickReveal(
+          trickCards: _lastTrickCards,
+          winnerName: _lastTrickWinnerId,
+          onComplete: () => Navigator.pop(context),
+        ),
+      );
     }
 
-    // Build round summary
     final buffer = StringBuffer();
     buffer.writeln('📊 Round ${game.roundNumber} Summary:\n');
     for (var player in players) {
-      buffer.writeln(
-        '${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}',
-      );
+      buffer.writeln('${player.name} - Tricks: ${player.tricksWon}, Score: ${player.score}');
     }
 
     final teamScores = game.calculateTeamScores();
@@ -86,44 +174,25 @@ class _GameScreenState extends State<GameScreen> {
       team1Score = teamScores[1] ?? 0;
       team2Score = teamScores[2] ?? 0;
       roundNumber = game.roundNumber;
+      _showBidPulse = false;
     });
   }
 
-  // --- Connection Helpers ---
-  void _showConnectedSnack(BuildContext ctx, String deviceName) {
-    ScaffoldMessenger.of(ctx).showSnackBar(
-      SnackBar(
-        content: Text("✅ Connected to $deviceName"),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _showConnectionFailedSnack(BuildContext ctx) {
-    ScaffoldMessenger.of(ctx).showSnackBar(
-      const SnackBar(
-        content: Text("❌ Connection failed"),
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   Future<void> _showDevicePicker() async {
-    final devices = await _syncService.getPairedDevices();
-    if (!mounted) return;
+    final ctx = context;
+    final devices = await widget.syncService.getPairedDevices();
+    if (!ctx.mounted) return;
 
     if (devices.isEmpty) {
       showDialog(
-        context: context,
+        context: ctx,
         builder: (_) => AlertDialog(
-          title: const Text("No Devices Found"),
-          content: const Text("No paired Bluetooth devices were found."),
+          title: Text(widget.strings.noDevicesFound),
+          content: Text(widget.strings.noPairedDevices),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(widget.strings.ok),
             ),
           ],
         ),
@@ -132,9 +201,9 @@ class _GameScreenState extends State<GameScreen> {
     }
 
     showDialog(
-      context: context,
+      context: ctx,
       builder: (_) => AlertDialog(
-        title: const Text("Select a Device"),
+        title: Text(widget.strings.selectDevice),
         content: SizedBox(
           width: double.maxFinite,
           height: 300,
@@ -147,23 +216,30 @@ class _GameScreenState extends State<GameScreen> {
                 title: Text(device.name ?? "Unknown"),
                 subtitle: Text(device.address),
                 onTap: () async {
-                  final ctx = context; // capture context
                   Navigator.pop(ctx);
-
                   try {
-                    await _syncService.connectToDevice(device.address);
-                    if (!context.mounted) return;
+                    await widget.syncService.connectToDevice(device.address);
+                    if (!ctx.mounted) return;
                     setState(() {
-                      _connectionStatus =
-                          "Connected to ${device.name ?? device.address}";
+                      _connectionStatus = "Connected to ${device.name ?? device.address}";
                     });
-                    _showConnectedSnack(ctx, device.name ?? device.address);
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(
+                        content: Text("✅ Connected to ${device.name ?? device.address}"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
                   } catch (_) {
-                    if (!context.mounted) return;
+                    if (!ctx.mounted) return;
                     setState(() {
                       _connectionStatus = "Connection failed";
                     });
-                    _showConnectionFailedSnack(ctx);
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(
+                        content: Text(widget.strings.connectionFailed),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                   }
                 },
               );
@@ -175,36 +251,33 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _disconnect() {
-    _syncService.disconnect();
+    final ctx = context;
+    widget.syncService.disconnect();
     setState(() {
       _connectionStatus = "Not connected";
     });
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("🔌 Disconnected"),
+    if (!ctx.mounted) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Text(widget.strings.disconnected),
         backgroundColor: Colors.orange,
-        duration: Duration(seconds: 2),
       ),
     );
   }
 
-  // --- UI ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Twenty Nine - Game Table',
-          key: Key('gameScreenTitle'), // 👈 Added for test
-        ),
+        title: Text(widget.strings.gameTableTitle, key: const Key('gameScreenTitle')),
         actions: [
           IconButton(
+            key: const Key('refreshSimulationButton'),
             icon: const Icon(Icons.refresh),
-            tooltip: 'Restart Simulation',
+            tooltip: widget.strings.restartSimulation,
             onPressed: () {
               setState(() {
-                resultText = 'Tap "Run Game Simulation" to see results';
+                resultText = widget.strings.simulationPrompt;
                 team1Score = 0;
                 team2Score = 0;
                 roundNumber = 1;
@@ -219,11 +292,10 @@ class _GameScreenState extends State<GameScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // --- Connection Status Bar ---
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
+                                decoration: BoxDecoration(
                   color: _connectionStatus.startsWith("Connected")
                       ? Colors.green[400]
                       : Colors.red[400],
@@ -240,21 +312,23 @@ class _GameScreenState extends State<GameScreen> {
               ),
               const SizedBox(height: 12),
 
-              // --- Action Buttons ---
-              ElevatedButton.icon(
-                onPressed: runGameSimulation,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Run Game Simulation'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
+              FeedbackPulse(
+                trigger: _showBidPulse,
+                child: ElevatedButton.icon(
+                  key: const Key('playButton'),
+                  onPressed: runGameSimulation,
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(widget.strings.runSimulation),
+                  style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
                 ),
               ),
               const SizedBox(height: 12),
 
               ElevatedButton.icon(
+                key: const Key('connectMultiplayerButton'),
                 onPressed: _showDevicePicker,
                 icon: const Icon(Icons.wifi_tethering),
-                label: const Text('Connect (Multiplayer)'),
+                label: Text(widget.strings.connectMultiplayer),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   backgroundColor: Colors.blue,
@@ -264,9 +338,10 @@ class _GameScreenState extends State<GameScreen> {
               const SizedBox(height: 12),
 
               ElevatedButton.icon(
+                key: const Key('disconnectButton'),
                 onPressed: _disconnect,
                 icon: const Icon(Icons.link_off),
-                label: const Text('Disconnect'),
+                label: Text(widget.strings.disconnect),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   backgroundColor: Colors.red,
@@ -276,23 +351,7 @@ class _GameScreenState extends State<GameScreen> {
               const SizedBox(height: 12),
 
               ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const BiddingScreen()),
-                  );
-                },
-                icon: const Icon(Icons.gavel),
-                label: const Text('Go to Bidding Screen'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-                            ElevatedButton.icon(
+                key: const Key('roundSummaryButton'),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -302,12 +361,13 @@ class _GameScreenState extends State<GameScreen> {
                         team2Score: team2Score,
                         roundNumber: roundNumber,
                         firebaseService: widget.firebaseService,
+                        strings: widget.strings,
                       ),
                     ),
                   );
                 },
                 icon: const Icon(Icons.summarize),
-                label: const Text('Go to Round Summary'),
+                label: Text(widget.strings.goToRoundSummary),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   backgroundColor: Colors.purple,
@@ -316,8 +376,30 @@ class _GameScreenState extends State<GameScreen> {
               ),
               const SizedBox(height: 20),
 
-              // --- Results Log ---
               Expanded(
+                flex: 2,
+                child: Container(
+                  alignment: Alignment.center,
+                  color: Colors.green[700],
+                  child: DealingAnimation(
+                    key: _dealingKey,
+                    batchSize: 4,
+                    onBatchComplete: () {
+                      debugPrint("✅ First batch complete → show bidding UI");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(widget.strings.firstBatchComplete),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Expanded(
+                flex: 3,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -328,7 +410,7 @@ class _GameScreenState extends State<GameScreen> {
                   child: Scrollbar(
                     thumbVisibility: true,
                     child: SingleChildScrollView(
-                      reverse: true, // auto-scroll to bottom
+                      reverse: true,
                       child: SelectableText(
                         resultText,
                         style: const TextStyle(
@@ -344,6 +426,14 @@ class _GameScreenState extends State<GameScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('dealNextBatchButton'),
+        onPressed: () {
+          _dealingKey.currentState?.startNextBatch();
+        },
+        icon: const Icon(Icons.play_arrow),
+        label: Text(widget.strings.dealNextBatch),
       ),
     );
   }

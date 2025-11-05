@@ -1,4 +1,4 @@
-import '../models/card.dart' as model; // Card29 + Suit + Rank
+import '../models/card29.dart' as model; // Card29 + Suit + Rank
 import '../models/game_state.dart';
 import '../models/player.dart';
 
@@ -28,7 +28,6 @@ class BotAI {
     final legalMoves = _legalMoves(state, player);
     final trumpSuit = state.trump;
 
-    // Prefer highest trump
     if (trumpSuit != null) {
       final trumpCards = _sortedByRank(
         legalMoves.where((c) => c.suit == trumpSuit),
@@ -37,7 +36,6 @@ class BotAI {
       if (trumpCards.isNotEmpty) return trumpCards.first;
     }
 
-    // Otherwise highest overall
     return _sortedByRank(legalMoves, descending: true).first;
   }
 
@@ -47,11 +45,9 @@ class BotAI {
     final currentWinner = state.lastTrick?.determineWinner(state.trump);
 
     if (currentWinner != null && currentWinner.teamId == player.teamId) {
-      // Partner is winning → throw away lowest card
       return _sortedByRank(legalMoves).first;
     }
 
-    // Otherwise, try to win with the lowest possible card
     return _sortedByRank(legalMoves).first;
   }
 
@@ -61,21 +57,20 @@ class BotAI {
     final leadSuit = state.lastTrick?.leadSuit;
     final trumpSuit = state.trump;
 
-    // 1. Follow suit if possible (lowest of that suit)
     if (leadSuit != null) {
       final followSuitCards =
           _sortedByRank(legalMoves.where((c) => c.suit == leadSuit));
       if (followSuitCards.isNotEmpty) return followSuitCards.first;
     }
 
-    // 2. Otherwise, play highest trump
     if (trumpSuit != null) {
-      final trumpCards =
-          _sortedByRank(legalMoves.where((c) => c.suit == trumpSuit), descending: true);
+      final trumpCards = _sortedByRank(
+        legalMoves.where((c) => c.suit == trumpSuit),
+        descending: true,
+      );
       if (trumpCards.isNotEmpty) return trumpCards.first;
     }
 
-    // 3. Otherwise, discard lowest card
     return _sortedByRank(legalMoves).first;
   }
 
@@ -89,11 +84,14 @@ class BotAI {
   }
 
   // --- Helper: sort cards by rank ---
-  List<model.Card29> _sortedByRank(Iterable<model.Card29> cards,
-      {bool descending = false}) {
+  List<model.Card29> _sortedByRank(
+    Iterable<model.Card29> cards, {
+    bool descending = false,
+  }) {
     final list = cards.toList();
-    list.sort((a, b) =>
-        descending ? b.rank.index.compareTo(a.rank.index) : a.rank.index.compareTo(b.rank.index));
+    list.sort((a, b) => descending
+        ? b.rank.index.compareTo(a.rank.index)
+        : a.rank.index.compareTo(b.rank.index));
     return list;
   }
 }

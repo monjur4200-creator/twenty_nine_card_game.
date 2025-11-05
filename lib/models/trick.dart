@@ -1,4 +1,4 @@
-import 'card.dart';
+import 'card29.dart';
 import 'player.dart';
 import 'package:twenty_nine_card_game/game_logic/game_errors.dart';
 
@@ -14,8 +14,11 @@ class Trick {
   Suit? get leadSuit =>
       plays.isNotEmpty ? plays.entries.first.value.suit : null;
 
+  /// ✅ Public getter to expose played cards
+  List<Card29> get cards => plays.values.toList();
+
+  /// Adds a card play to the trick, enforcing turn order and ownership.
   void addPlay(Player player, Card29 card) {
-    // ✅ Prevent same player playing twice
     if (plays.containsKey(player)) {
       throw GameError.invalidMove(
         'Player ${player.name} has already played this trick.',
@@ -23,12 +26,10 @@ class Trick {
       );
     }
 
-    // ✅ Enforce turn order if provided
     if (turnOrder != null && player != turnOrder![_currentTurnIndex]) {
       throw GameError.outOfTurn(player.id.toString());
     }
 
-    // ✅ Ensure the player actually has the card
     if (!player.hand.contains(card)) {
       throw GameError.cardNotInHand(
         playerId: player.id.toString(),
@@ -36,13 +37,9 @@ class Trick {
       );
     }
 
-    // Record play
     plays[player] = card;
-
-    // Delegate removal to Player
     player.playCard(card);
 
-    // Advance turn index
     if (turnOrder != null) {
       _currentTurnIndex = (_currentTurnIndex + 1) % turnOrder!.length;
     }
@@ -62,15 +59,13 @@ class Trick {
       final card = entry.value;
 
       final isTrump = trumpSuit != null && card.suit == trumpSuit;
-      final currentIsTrump =
-          trumpSuit != null && winningCard.suit == trumpSuit;
+      final currentIsTrump = trumpSuit != null && winningCard.suit == trumpSuit;
 
       if (isTrump && !currentIsTrump) {
         winner = entry.key;
         winningCard = card;
       } else if (!isTrump && !currentIsTrump) {
-        if (card.suit == leadSuit &&
-            card.rank.value > winningCard.rank.value) {
+        if (card.suit == leadSuit && card.rank.value > winningCard.rank.value) {
           winner = entry.key;
           winningCard = card;
         }
@@ -85,20 +80,24 @@ class Trick {
     return winner;
   }
 
+  /// Returns the total points in this trick.
   int totalPoints() =>
       plays.values.fold<int>(0, (sum, card) => sum + card.points);
 
+  /// Resets the trick for reuse.
   void reset() {
     plays.clear();
     _currentTurnIndex = 0;
   }
 
+  /// Serializes the trick to a map.
   Map<String, dynamic> toMap() {
     return plays.map(
       (player, card) => MapEntry(player.id.toString(), card.toMap()),
     );
   }
 
+  /// Reconstructs a trick from a map and player list.
   factory Trick.fromMap(Map<String, dynamic> map, List<Player> allPlayers) {
     final trick = Trick();
     map.forEach((pid, cardData) {

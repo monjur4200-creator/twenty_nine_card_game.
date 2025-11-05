@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twenty_nine_card_game/models/game_state.dart';
 import 'package:twenty_nine_card_game/models/player.dart';
-import 'package:twenty_nine_card_game/models/card.dart';
+import 'package:twenty_nine_card_game/models/card29.dart';
+import 'package:twenty_nine_card_game/models/login_method.dart';
+import 'package:twenty_nine_card_game/models/connection_type.dart';
 
 void main() {
   group('Multi-Round Game Flow Integration (with rotation)', () {
@@ -11,10 +13,10 @@ void main() {
 
     setUp(() {
       players = [
-        Player(id: 1, name: 'Alice', teamId: 1),
-        Player(id: 2, name: 'Bob', teamId: 2),
-        Player(id: 3, name: 'Charlie', teamId: 1),
-        Player(id: 4, name: 'Dave', teamId: 2),
+        Player(id: 1, name: 'Alice', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 2, name: 'Bob', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 3, name: 'Charlie', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 4, name: 'Dave', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
       ];
       gameState = GameState(players);
     });
@@ -32,10 +34,10 @@ void main() {
       gameState.revealTrump(Suit.spades);
 
       final round1Cards = [
-        Card29(Suit.hearts, Rank.nine),
-        Card29(Suit.hearts, Rank.jack),
-        Card29(Suit.hearts, Rank.ace),
-        Card29(Suit.spades, Rank.nine),
+        const Card29(Suit.hearts, Rank.nine),
+        const Card29(Suit.hearts, Rank.jack),
+        const Card29(Suit.hearts, Rank.ace),
+        const Card29(Suit.spades, Rank.nine),
       ];
       final tricksBefore1 = players.fold<int>(0, (sum, p) => sum + p.tricksWon);
       for (int i = 0; i < players.length; i++) {
@@ -52,7 +54,6 @@ void main() {
       gameState.updateTeamScores();
       expect(gameState.teamScores, isNotEmpty);
 
-      // ✅ Rule-based, null-safe assertion
       expect(gameState.highestBidder, isNotNull);
       final biddingTeam1 = gameState.highestBidder!.teamId;
       final biddingTarget1 = gameState.targetScore;
@@ -92,10 +93,10 @@ void main() {
       gameState.revealTrump(Suit.clubs);
 
       final round2Cards = [
-        Card29(Suit.clubs, Rank.jack),
-        Card29(Suit.clubs, Rank.nine),
-        Card29(Suit.clubs, Rank.ace),
-        Card29(Suit.clubs, Rank.ten),
+        const Card29(Suit.clubs, Rank.jack),
+        const Card29(Suit.clubs, Rank.nine),
+        const Card29(Suit.clubs, Rank.ace),
+        const Card29(Suit.clubs, Rank.ten),
       ];
       final tricksBefore2 = players.fold<int>(0, (sum, p) => sum + p.tricksWon);
       for (int i = 0; i < players.length; i++) {
@@ -111,7 +112,6 @@ void main() {
 
       gameState.updateTeamScores();
 
-      // ✅ Rule-based, null-safe assertion
       expect(gameState.highestBidder, isNotNull);
       final biddingTeam2 = gameState.highestBidder!.teamId;
       final biddingTarget2 = gameState.targetScore;
@@ -143,8 +143,7 @@ void main() {
       expect(
         gameState.tricksHistory.isEmpty,
         isTrue,
-        reason:
-            'Final check: tricksHistory length=${gameState.tricksHistory.length}',
+        reason: 'Final check: tricksHistory length=${gameState.tricksHistory.length}',
       );
     });
   });

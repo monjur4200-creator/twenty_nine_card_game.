@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twenty_nine_card_game/models/player.dart';
-import 'package:twenty_nine_card_game/models/card.dart';
+import 'package:twenty_nine_card_game/models/card29.dart';
 import 'package:twenty_nine_card_game/models/game_state.dart';
 import 'package:twenty_nine_card_game/game_logic/game_errors.dart';
+import 'package:twenty_nine_card_game/models/login_method.dart';
+import 'package:twenty_nine_card_game/models/connection_type.dart';
 
 void main() {
   late List<Player> players;
@@ -11,10 +13,10 @@ void main() {
 
   setUp(() {
     players = [
-      Player(id: 1, name: 'Mongur', teamId: 1),
-      Player(id: 2, name: 'Rafi', teamId: 2),
-      Player(id: 3, name: 'Tuli', teamId: 1),
-      Player(id: 4, name: 'Nayeem', teamId: 2),
+      Player(id: 1, name: 'Mongur', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+      Player(id: 2, name: 'Rafi', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+      Player(id: 3, name: 'Tuli', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+      Player(id: 4, name: 'Nayeem', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
     ];
     game = GameState(players);
     game.startNewRound();
@@ -46,19 +48,16 @@ void main() {
 
     test('throws error if trump is revealed twice', () {
       game.revealTrump(Suit.spades);
-      expect(
-        () => game.revealTrump(Suit.hearts),
-        throwsA(isA<ArgumentError>()),
-      );
+      expect(() => game.revealTrump(Suit.hearts), throwsA(isA<ArgumentError>()));
     });
   });
 
   group('Trick Play Phase', () {
     test('records a trick and determines a winner', () {
-      players[0].setHandForTest([Card29(Suit.hearts, Rank.jack)]); // 3 pts
-      players[1].setHandForTest([Card29(Suit.spades, Rank.nine)]); // 2 pts
-      players[2].setHandForTest([Card29(Suit.hearts, Rank.nine)]); // 2 pts
-      players[3].setHandForTest([Card29(Suit.clubs, Rank.king)]); // 0 pts
+      players[0].setHandForTest([const Card29(Suit.hearts, Rank.jack)]); // 3 pts
+      players[1].setHandForTest([const Card29(Suit.spades, Rank.nine)]); // 2 pts
+      players[2].setHandForTest([const Card29(Suit.hearts, Rank.nine)]); // 2 pts
+      players[3].setHandForTest([const Card29(Suit.clubs, Rank.king)]); // 0 pts
 
       game.revealTrump(Suit.hearts);
 
@@ -77,7 +76,7 @@ void main() {
     });
 
     test('throws GameError if player tries to play a card not in hand', () {
-      final fakeCard = Card29(Suit.hearts, Rank.king);
+      const fakeCard = Card29(Suit.hearts, Rank.king);
       expect(
         () => game.playCard(players[0], fakeCard),
         throwsA(isA<GameError>().having((e) => e.code, 'code', GameErrorCode.cardNotInHand)),
@@ -85,17 +84,14 @@ void main() {
     });
 
     test('throws GameError if same player plays twice in one trick', () {
-      // Give player two cards so the second call reaches Trick.addPlay
       players[0].setHandForTest([
-        Card29(Suit.hearts, Rank.jack),
-        Card29(Suit.spades, Rank.nine),
+        const Card29(Suit.hearts, Rank.jack),
+        const Card29(Suit.spades, Rank.nine),
       ]);
       game.revealTrump(Suit.hearts);
 
-      // First play
       game.playCard(players[0], players[0].hand.first);
 
-      // Second play (different card, same player, same trick)
       expect(
         () => game.playCard(players[0], players[0].hand.first),
         throwsA(isA<GameError>().having((e) => e.code, 'code', GameErrorCode.invalidMove)),
@@ -105,10 +101,10 @@ void main() {
 
   group('Round Summary', () {
     test('updates team scores after tricks', () {
-      players[0].setHandForTest([Card29(Suit.hearts, Rank.jack)]); // 3 pts
-      players[1].setHandForTest([Card29(Suit.spades, Rank.nine)]); // 2 pts
-      players[2].setHandForTest([Card29(Suit.hearts, Rank.nine)]); // 2 pts
-      players[3].setHandForTest([Card29(Suit.clubs, Rank.king)]); // 0 pts
+      players[0].setHandForTest([const Card29(Suit.hearts, Rank.jack)]); // 3 pts
+      players[1].setHandForTest([const Card29(Suit.spades, Rank.nine)]); // 2 pts
+      players[2].setHandForTest([const Card29(Suit.hearts, Rank.nine)]); // 2 pts
+      players[3].setHandForTest([const Card29(Suit.clubs, Rank.king)]); // 0 pts
 
       game.revealTrump(Suit.hearts);
 
@@ -116,9 +112,7 @@ void main() {
         game.playCard(player, player.hand.first);
       }
 
-      // ✅ Ensure teamScores is updated before checking
       game.updateTeamScores();
-
       game.printRoundSummary();
 
       final team1Score = game.teamScores[1] ?? 0;

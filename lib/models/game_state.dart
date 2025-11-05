@@ -1,11 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'player.dart';
-import 'card.dart'; // defines Card29 + Suit
+import 'card29.dart';
 import 'trick.dart';
 import 'package:twenty_nine_card_game/models/utils/firestore_helpers.dart';
 import 'package:twenty_nine_card_game/game_logic/game_errors.dart';
 
-/// Represents the overall state of a single game session.
 class GameState {
   final List<Player> players;
 
@@ -14,14 +13,9 @@ class GameState {
   Suit? trump;
   bool trumpRevealed;
   int currentTurn;
-
-  /// Target score for the bidding team (default 29).
   int targetScore;
 
-  /// Keeps a history of tricks played.
   final List<Trick> tricksHistory;
-
-  /// Stores team scores (int keys) for quick access.
   Map<int, int> teamScores;
 
   GameState(
@@ -42,52 +36,40 @@ class GameState {
   void startNewRound() {
     roundNumber++;
     tricksHistory.clear();
-
     highestBidder = null;
     trump = null;
     trumpRevealed = false;
     currentTurn = 0;
-
     for (final p in players) {
       p.resetForNewRound();
     }
   }
 
-  // --- Bidding ---
+  // --- Bidding & Trump ---
 
   void conductBidding(Map<Player, int> bids) {
-    if (bids.isEmpty) {
-      throw ArgumentError('No bids were placed.');
-    }
-
+    if (bids.isEmpty) throw ArgumentError('No bids were placed.');
     Player? topBidder;
     int highestBid = 0;
-
     bids.forEach((player, bid) {
       if (bid > highestBid) {
         highestBid = bid;
         topBidder = player;
       }
     });
-
     highestBidder = topBidder;
     targetScore = highestBid;
   }
 
-  // --- Trump ---
-
   void revealTrump(Suit suit) {
-    if (trumpRevealed) {
-      throw ArgumentError('Trump has already been revealed.');
-    }
+    if (trumpRevealed) throw ArgumentError('Trump has already been revealed.');
     trump = suit;
     trumpRevealed = true;
   }
 
-  // --- Gameplay ---
+  // --- Trick Play ---
 
   void playCard(Player player, Card29 card) {
-    // ✅ Guard: player must actually have the card
     if (!player.hand.contains(card)) {
       throw GameError.cardNotInHand(
         playerId: player.id.toString(),
@@ -95,17 +77,14 @@ class GameState {
       );
     }
 
-    // Start a new trick only if the last one is complete
-    if (tricksHistory.isEmpty ||
-        tricksHistory.last.plays.length == players.length) {
-      if (player.hand.isEmpty) return; // end of round
+    if (tricksHistory.isEmpty || tricksHistory.last.plays.length == players.length) {
+      if (player.hand.isEmpty) return;
       tricksHistory.add(Trick());
     }
 
     final currentTrick = tricksHistory.last;
     currentTrick.addPlay(player, card);
 
-    // ✅ If trick is complete, determine winner and award points
     if (currentTrick.plays.length == players.length) {
       final winner = currentTrick.determineWinner(trump);
       if (winner != null) {
@@ -114,23 +93,58 @@ class GameState {
       }
     }
 
-    // ✅ After the last card of the round, purge any empty trick
     if (players.every((p) => p.hand.isEmpty)) {
       tricksHistory.removeWhere((t) => t.plays.isEmpty);
     }
   }
 
-  /// Returns the most recent trick, or null if none exist.
-  Trick? get lastTrick =>
-      tricksHistory.isNotEmpty ? tricksHistory.last : null;
+  Trick? get lastTrick => tricksHistory.isNotEmpty ? tricksHistory.last : null;
+  Trick? get currentTrick => tricksHistory.isNotEmpty ? tricksHistory.last : null;
+
+  Player? getTrickWinner() {
+    final trick = lastTrick;
+    if (trick == null || trick.plays.length < players.length) return null;
+    return trick.determineWinner(trump);
+  }
 
   // --- Scoring ---
 
   Map<int, int> calculateTeamScores() {
     final scores = <int, int>{};
+    final biddingTeam = highestBidder?.teamId;
+
     for (var player in players) {
       scores[player.teamId] = (scores[player.teamId] ?? 0) + player.score;
     }
+
+    if (trumpRevealed && trump != null && biddingTeam != null) {
+      bool biddingTeamHeldK = false;
+      bool biddingTeamHeldQ = false;
+
+      for (final player in players) {
+        if (player.teamId != biddingTeam) continue;
+        for (final card in player.hand) {
+          if (card.suit == trump) {
+            if (card.rank == Rank.king) biddingTeamHeldK = true;
+            if (card.rank == Rank.queen) biddingTeamHeldQ = true;
+          }
+        }
+      }
+
+      if (biddingTeamHeldK) scores[biddingTeam] = (scores[biddingTeam] ?? 0) + 4;
+      if (biddingTeamHeldQ) scores[biddingTeam] = (scores[biddingTeam] ?? 0) + 4;
+
+      for (final player in players) {
+        if (player.teamId == biddingTeam) continue;
+        for (final card in player.hand) {
+          if (card.suit == trump) {
+            if (card.rank == Rank.king) scores[player.teamId] = (scores[player.teamId] ?? 0) - 4;
+            if (card.rank == Rank.queen) scores[player.teamId] = (scores[player.teamId] ?? 0) - 4;
+          }
+        }
+      }
+    }
+
     return scores;
   }
 
@@ -146,13 +160,10 @@ class GameState {
   }
 
   void printRoundSummary() {
-    // ignore: avoid_print
     debugPrint('Round $roundNumber Summary');
     for (var player in players) {
-      // ignore: avoid_print
       debugPrint('${player.name}: Tricks ${player.tricksWon}, Score ${player.score}');
     }
-    // ignore: avoid_print
     debugPrint('Team Scores: $teamScores');
   }
 
@@ -179,23 +190,18 @@ class GameState {
     final trumpSuit = trumpName != null ? Suit.values.byName(trumpName) : null;
 
     final tricks = (map['tricksHistory'] as List<dynamic>? ?? [])
-        .map((trickMap) =>
-            Trick.fromMap(Map<String, dynamic>.from(trickMap), allPlayers))
+        .map((trickMap) => Trick.fromMap(Map<String, dynamic>.from(trickMap), allPlayers))
         .toList();
 
     final highestBidderId = (map['highestBidder'] as num?)?.toInt();
-
-    final rawScores = map['teamScores'] as Map<String, dynamic>? ?? {};
+    final rawScores = Map<String, dynamic>.from(map['teamScores'] ?? {});
     final parsedScores = parseTeamScores(rawScores);
 
     return GameState(
       allPlayers,
       roundNumber: round,
       highestBidder: highestBidderId != null
-          ? allPlayers.firstWhere(
-              (p) => p.id == highestBidderId,
-              orElse: () => allPlayers.first,
-            )
+          ? allPlayers.firstWhere((p) => p.id == highestBidderId, orElse: () => allPlayers.first)
           : null,
       trump: trumpSuit,
       trumpRevealed: map['trumpRevealed'] as bool? ?? false,
@@ -206,18 +212,11 @@ class GameState {
     );
   }
 
-  // --- Game Finalization ---
-
   void finalizeGame() {
     tricksHistory.clear();
   }
 
-  // --- Bot AI Support ---
-
-  // Returns true if a card is legal to play in the current state.
   bool isLegalMove(Card29 card) {
-    // TODO: implement full rule logic (follow suit, trump rules, etc.)
-    // For now, assume any card in hand is legal.
     return players.any((p) => p.hand.contains(card));
   }
 }

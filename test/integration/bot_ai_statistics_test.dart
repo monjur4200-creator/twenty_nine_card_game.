@@ -1,11 +1,13 @@
 import 'dart:math';
-import 'package:flutter/foundation.dart'; // 👈 add this
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twenty_nine_card_game/services/bot_ai.dart';
-import 'package:twenty_nine_card_game/models/card.dart' as model;
+import 'package:twenty_nine_card_game/models/card29.dart' as model;
 import 'package:twenty_nine_card_game/models/game_state.dart';
 import 'package:twenty_nine_card_game/models/player.dart';
 import 'package:twenty_nine_card_game/models/trick.dart';
+import 'package:twenty_nine_card_game/models/login_method.dart';
+import 'package:twenty_nine_card_game/models/connection_type.dart';
 
 /// Generate a full 32‑card deck (7–Ace in each suit).
 List<model.Card29> generateDeck() {
@@ -34,8 +36,7 @@ List<List<model.Card29>> dealShuffledHands(
 
 void main() {
   group('BotAI statistical simulation', () {
-    test('Collect win statistics across 50 simulated games with shuffled deck',
-        () {
+    test('Collect win statistics across 50 simulated games with shuffled deck', () {
       final winCounts = {
         'AggroBot': 0,
         'CarefulBot': 0,
@@ -47,10 +48,34 @@ void main() {
 
       for (int game = 0; game < 50; game++) {
         // Players
-        final aggro = Player(id: 1, name: 'AggroBot', teamId: 1);
-        final cautious = Player(id: 2, name: 'CarefulBot', teamId: 1);
-        final logic1 = Player(id: 3, name: 'LogicBot1', teamId: 2);
-        final logic2 = Player(id: 4, name: 'LogicBot2', teamId: 2);
+        final aggro = Player(
+          id: 1,
+          name: 'AggroBot',
+          teamId: 1,
+          loginMethod: LoginMethod.guest,
+          connectionType: ConnectionType.local,
+        );
+        final cautious = Player(
+          id: 2,
+          name: 'CarefulBot',
+          teamId: 1,
+          loginMethod: LoginMethod.guest,
+          connectionType: ConnectionType.local,
+        );
+        final logic1 = Player(
+          id: 3,
+          name: 'LogicBot1',
+          teamId: 2,
+          loginMethod: LoginMethod.guest,
+          connectionType: ConnectionType.local,
+        );
+        final logic2 = Player(
+          id: 4,
+          name: 'LogicBot2',
+          teamId: 2,
+          loginMethod: LoginMethod.guest,
+          connectionType: ConnectionType.local,
+        );
         final players = [aggro, cautious, logic1, logic2];
 
         // Deal shuffled hands (8 cards each for 32‑card deck)
@@ -60,8 +85,7 @@ void main() {
         }
 
         // Randomize trump suit
-        final trumpSuit =
-            model.Suit.values[rng.nextInt(model.Suit.values.length)];
+        final trumpSuit = model.Suit.values[rng.nextInt(model.Suit.values.length)];
         final state = GameState(players, trump: trumpSuit);
 
         final bots = [

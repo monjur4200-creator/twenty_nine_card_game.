@@ -8,6 +8,7 @@ import 'package:twenty_nine_card_game/main.dart';
 import 'package:twenty_nine_card_game/services/firebase_service.dart';
 import 'package:twenty_nine_card_game/services/presence_service.dart';
 import 'package:twenty_nine_card_game/services/room_service.dart';
+import 'package:twenty_nine_card_game/localization/strings.dart'; // ✅ Add this
 
 /// Fake PresenceService that lets us simulate multiple players joining
 class TestableFakePresenceService implements PresenceService {
@@ -85,21 +86,19 @@ void main() {
           firebaseService: fakeService,
           presenceService: fakePresence,
           roomService: fakeRoom,
+          strings: Strings('en'), // ✅ Add this
         ),
       );
 
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Navigate to Lobby
       await tester.tap(find.byKey(const Key('createRoomButton')));
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Simulate multiple players joining
       await fakePresence.setPlayerPresence('room1', 'p1', 'Mongur');
       await fakePresence.setPlayerPresence('room1', 'p2', 'Ada');
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Verify both players appear in the Lobby
       expect(find.text('Mongur'), findsOneWidget);
       expect(find.text('Ada'), findsOneWidget);
     });

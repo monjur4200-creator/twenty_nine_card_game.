@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:twenty_nine_card_game/main.dart';
 import 'package:twenty_nine_card_game/services/presence_service.dart';
 import 'package:twenty_nine_card_game/services/room_service.dart';
+import 'package:twenty_nine_card_game/localization/strings.dart';
 
 /// Minimal fakes for this test
 class FakePresenceService implements PresenceService {
@@ -51,32 +52,28 @@ class FakeRoomService implements RoomService {
 
 void main() {
   group('Accessibility - Text Scaling', () {
-    testWidgets('Main Menu handles large text scale without overflow',
-        (WidgetTester tester) async {
-      // Pump the app with a large text scale factor
+    testWidgets('Main Menu handles large text scale without overflow', (WidgetTester tester) async {
       await tester.pumpWidget(
         MediaQuery(
-          data: const MediaQueryData(textScaler: TextScaler.linear(2.5)), // simulate very large text
+          data: const MediaQueryData(textScaler: TextScaler.linear(2.5)),
           child: MaterialApp(
             home: TwentyNineApp(
-              firebaseService: FakeFirebaseService(), // assumes you have a fake constructor
+              firebaseService: FakeFirebaseService(),
               presenceService: FakePresenceService(),
               roomService: FakeRoomService(),
+              strings: Strings('en'),
             ),
           ),
         ),
       );
 
-      // Give the widget tree time to rebuild after the fake service emits
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Verify key UI elements are still present
       expect(find.text('Main Menu'), findsOneWidget);
       expect(find.byKey(const Key('startGameButton')), findsOneWidget);
       expect(find.byKey(const Key('createRoomButton')), findsOneWidget);
       expect(find.byKey(const Key('joinRoomButton')), findsOneWidget);
 
-      // No overflow errors should be logged
       expect(tester.takeException(), isNull);
     });
   });

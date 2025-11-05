@@ -26,7 +26,7 @@ void main() {
     });
 
     test('fallback to waiting if unknown string', () {
-      final unknown = 'paused';
+      const unknown = 'paused';
       final status = RoomStatus.values.firstWhere(
         (s) => s.name == unknown,
         orElse: () => RoomStatus.waiting,

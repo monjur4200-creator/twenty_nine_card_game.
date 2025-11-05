@@ -8,23 +8,20 @@ import 'package:twenty_nine_card_game/main.dart';
 import 'package:twenty_nine_card_game/services/firebase_service.dart';
 import 'package:twenty_nine_card_game/services/presence_service.dart';
 import 'package:twenty_nine_card_game/services/room_service.dart';
+import 'package:twenty_nine_card_game/localization/strings.dart';
 
-/// Fake PresenceService for controlled simulation
 class TestableFakePresenceService implements PresenceService {
-  final StreamController<List<Map<String, dynamic>>> _controller =
-      StreamController.broadcast();
+  final StreamController<List<Map<String, dynamic>>> _controller = StreamController.broadcast();
   final List<Map<String, dynamic>> _players = [];
 
   @override
-  Future<void> setPlayerPresence(
-      String roomId, String playerId, String playerName) async {
+  Future<void> setPlayerPresence(String roomId, String playerId, String playerName) async {
     _players.add({'id': playerId, 'name': playerName});
     _controller.add(List<Map<String, dynamic>>.from(_players));
   }
 
   @override
-  Future<void> removePlayer(
-      String roomId, String playerId, String playerName) async {
+  Future<void> removePlayer(String roomId, String playerId, String playerName) async {
     _players.removeWhere((p) => p['id'] == playerId);
     _controller.add(List<Map<String, dynamic>>.from(_players));
   }
@@ -35,7 +32,6 @@ class TestableFakePresenceService implements PresenceService {
   }
 }
 
-/// Minimal Fake RoomService
 class TestableFakeRoomService implements RoomService {
   @override
   Future<void> createRoom(String roomId, Map<String, dynamic> data) async {}
@@ -78,25 +74,35 @@ void main() {
   });
 
   group('Game Start Flow Test', () {
-    testWidgets('Pressing Start Game navigates to GameScreen',
-        (WidgetTester tester) async {
+    testWidgets('Pressing Start Game navigates to GameScreen', (WidgetTester tester) async {
       await tester.pumpWidget(
-        TwentyNineApp(
-          firebaseService: fakeService,
-          presenceService: fakePresence,
-          roomService: fakeRoom,
+        MaterialApp(
+          home: TwentyNineApp(
+            firebaseService: fakeService,
+            presenceService: fakePresence,
+            roomService: fakeRoom,
+            strings: Strings('en'),
+          ),
         ),
       );
 
       await tester.pumpAndSettle();
 
-      // Ensure the Start Game button is visible and tap it
+      final guestLoginButton = find.byKey(const Key('login_Guest'));
+      expect(guestLoginButton, findsOneWidget);
+      await tester.tap(guestLoginButton);
+      await tester.pumpAndSettle();
+
+      final localConnectionButton = find.byKey(const Key('connection_local'));
+      expect(localConnectionButton, findsOneWidget);
+      await tester.tap(localConnectionButton);
+      await tester.pumpAndSettle();
+
       final startButton = find.byKey(const Key('startGameButton'));
-      await tester.ensureVisible(startButton);
+      expect(startButton, findsOneWidget);
       await tester.tap(startButton);
       await tester.pumpAndSettle();
 
-      // Verify GameScreen is shown by key
       expect(find.byKey(const Key('gameScreenTitle')), findsOneWidget);
     });
   });

@@ -1,10 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../services/room_service.dart';
 import '../services/firebase_service.dart';
+import '../services/presence_service.dart';
+import '../services/sync_service_interface.dart';
+import '../localization/strings.dart';
+
+import '../widgets/player_banner.dart';
 import 'main_menu.dart';
 import 'game_screen.dart';
-import 'package:twenty_nine_card_game/services/presence_service.dart';
+
+import 'package:twenty_nine_card_game/models/login_method.dart';
+import 'package:twenty_nine_card_game/models/player.dart';
+import 'package:twenty_nine_card_game/models/connection_type.dart';
 
 class LobbyScreen extends StatefulWidget {
   final String roomId;
@@ -13,6 +22,10 @@ class LobbyScreen extends StatefulWidget {
   final FirebaseService firebaseService;
   final PresenceService presenceService;
   final RoomService roomService;
+  final Strings strings;
+  final Player player;
+  final SyncService syncService;
+  final ConnectionType connectionType;
 
   const LobbyScreen({
     super.key,
@@ -22,6 +35,10 @@ class LobbyScreen extends StatefulWidget {
     required this.firebaseService,
     required this.presenceService,
     required this.roomService,
+    required this.strings,
+    required this.player,
+    required this.syncService,
+    required this.connectionType,
   });
 
   @override
@@ -48,13 +65,15 @@ class _LobbyScreenState extends State<LobbyScreen> {
           _hostId = roomData['hostId'] as String?;
         });
 
-        // 🚀 Navigate to GameScreen when status == active
         if (roomData['status'] == 'active') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) => GameScreen(
                 firebaseService: widget.firebaseService,
+                strings: widget.strings,
+                player: widget.player,
+                syncService: widget.syncService,
               ),
             ),
           );
@@ -87,6 +106,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
           firebaseService: widget.firebaseService,
           presenceService: widget.presenceService,
           roomService: widget.roomService,
+          strings: widget.strings,
         ),
       ),
       (route) => false,
@@ -99,27 +119,28 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
   Widget _buildPlayerList(List<Map<String, dynamic>> players) {
     if (players.isEmpty) {
-      return const Center(child: Text("Waiting for players..."));
+      return Center(child: Text(widget.strings.waitingForPlayers));
     }
 
     return ListView.builder(
       itemCount: players.length,
       itemBuilder: (context, index) {
-        final player = players[index];
-        final isCurrentUser = player['id'] == widget.playerId;
+        final data = players[index];
+        final name = data['name'] ?? widget.strings.unknownPlayer;
+        final id = data['id'] ?? 'unknown';
+        final isCurrentUser = id == widget.playerId;
 
-        return ListTile(
-          leading: const Icon(Icons.person),
-          title: Text(player['name'] ?? 'Unknown'),
-          trailing: isCurrentUser
-              ? const Text(
-                  "(You)",
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: Colors.blue,
-                  ),
-                )
-              : null,
+        final player = Player(
+          id: index,
+          name: name,
+          teamId: 0,
+          loginMethod: LoginMethod.guest,
+          connectionType: widget.connectionType,
+        );
+
+        return PlayerBanner(
+          player: player,
+          isConnected: isCurrentUser,
         );
       },
     );
@@ -136,52 +157,44 @@ class _LobbyScreenState extends State<LobbyScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            "Lobby",
-            key: Key('lobbyTitle'), // 👈 smoke test expects this
+          title: Text(
+            widget.strings.lobbyTitle,
+            key: const Key('lobbyTitle'), // ✅ Required for UI smoke test
           ),
           automaticallyImplyLeading: false,
         ),
         body: Column(
           children: [
-            // --- Player List ---
             Expanded(
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: widget.presenceService.getRoomPlayersStream(
-                  widget.roomId,
-                ),
+                stream: widget.presenceService.getRoomPlayersStream(widget.roomId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text("Waiting for players..."));
+                    return Center(child: Text(widget.strings.waitingForPlayers));
                   }
                   return _buildPlayerList(snapshot.data!);
                 },
               ),
             ),
-
-            // --- Host-only Start Game Button ---
             if (isHost)
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ElevatedButton.icon(
-                  key: const Key('startGameButton'),
+                  key: const Key('startGameButton'), // ✅ Required for UI smoke test
                   onPressed: _startGame,
                   icon: const Icon(Icons.play_arrow),
-                  label: const Text("Start Game"),
+                  label: Text(widget.strings.startGame),
                 ),
               ),
-
-            // --- Leave Room Button ---
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                key: const Key('leaveRoomButton'),
+                key: const Key('leaveRoomButton'), // ✅ Required for UI smoke test
                 onPressed: _leaveRoom,
-                child: const Text("Leave Room"),
+                child: Text(widget.strings.leaveRoom),
               ),
             ),
           ],

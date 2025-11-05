@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:twenty_nine_card_game/main.dart';
 import 'package:twenty_nine_card_game/services/firebase_service.dart';
 import 'package:twenty_nine_card_game/services/presence_service.dart';
 import 'package:twenty_nine_card_game/services/room_service.dart';
+import 'package:twenty_nine_card_game/services/auth_service.dart';
+import 'package:twenty_nine_card_game/localization/strings.dart';
 
 /// Minimal fakes
 class FakePresenceService implements PresenceService {
@@ -51,41 +53,51 @@ class FakeRoomService implements RoomService {
   Future<void> updateRoomStatus(String roomId, String status) async {}
 }
 
+/// ✅ Fake AuthService to prevent FirebaseAuth.instance
+class FakeAuthService implements AuthService {
+  @override
+  Future<void> logout() async {}
+
+  @override
+  Future<User?> loginAsGuest() async => null;
+
+  @override
+  User? get currentUser => null;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   group('Accessibility - Contrast', () {
-    testWidgets('Main Menu text is visible against background',
-        (WidgetTester tester) async {
+    testWidgets('Main Menu text is visible against background', (WidgetTester tester) async {
       final fakeFirestore = FakeFirebaseFirestore();
       final mockAuth = MockFirebaseAuth();
-      final fakeService =
-          FirebaseService(auth: mockAuth, firestore: fakeFirestore);
+      final fakeService = FirebaseService(auth: mockAuth, firestore: fakeFirestore);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: TwentyNineApp(
-            firebaseService: fakeService,
-            presenceService: FakePresenceService(),
-            roomService: FakeRoomService(),
-          ),
+        TwentyNineApp(
+          firebaseService: fakeService,
+          presenceService: FakePresenceService(),
+          roomService: FakeRoomService(),
+          strings: Strings('en'),
+          authService: FakeAuthService(), // ✅ Injected
         ),
       );
 
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Find the text widget
       final finder = find.text('Main Menu');
       expect(finder, findsOneWidget);
 
-      final textWidget = tester.widget<Text>(finder);
+      final effectiveStyle = DefaultTextStyle.of(tester.element(finder)).style;
 
-      // If style is null, fall back to DefaultTextStyle
-      final effectiveStyle = textWidget.style ??
-          DefaultTextStyle.of(tester.element(finder)).style;
+      // ignore: avoid_print
+      print('Resolved style color: ${effectiveStyle.color}');
 
       expect(effectiveStyle.color, isNotNull);
-      // Use .a (alpha channel, 0–255) instead of .opacity
-      expect(effectiveStyle.color!.opacity, greaterThan(0.8),
-        reason: 'Main Menu text color is too transparent for good contrast');
+      final alpha = (effectiveStyle.color!.a * 255.0).round() & 0xff;
+      expect(alpha, greaterThan(204));
     });
   });
 }

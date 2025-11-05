@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:twenty_nine_card_game/utils/csv_utils.dart';
 
 class BotComparisonData {
   final String bot;
   final double run1Percent;
   final double run2Percent;
-  final double delta; // run2 - run1
+  final double delta;
 
   BotComparisonData(this.bot, this.run1Percent, this.run2Percent)
       : delta = run2Percent - run1Percent;
@@ -36,28 +36,6 @@ class BotStatsCompareScreen extends StatelessWidget {
       );
     }).toList();
 
-    final series = <charts.Series<BotComparisonData, String>>[
-      charts.Series<BotComparisonData, String>(
-        id: 'Run 1',
-        domainFn: (d, _) => d.bot,
-        measureFn: (d, _) => d.run1Percent,
-        data: data,
-        colorFn: (d, i) => charts.MaterialPalette.blue.shadeDefault,
-        labelAccessorFn: (d, _) => '${d.run1Percent.toStringAsFixed(1)}%',
-      ),
-      charts.Series<BotComparisonData, String>(
-        id: 'Run 2',
-        domainFn: (d, _) => d.bot,
-        measureFn: (d, _) => d.run2Percent,
-        data: data,
-        colorFn: (d, i) => charts.MaterialPalette.red.shadeDefault,
-        labelAccessorFn: (d, _) {
-          final sign = d.delta >= 0 ? '+' : '';
-          return '${d.run2Percent.toStringAsFixed(1)}% ($sign${d.delta.toStringAsFixed(1)})';
-        },
-      ),
-    ];
-
     return Scaffold(
       appBar: AppBar(title: const Text('Compare Two Runs (with Δ)')),
       body: Column(
@@ -66,14 +44,30 @@ class BotStatsCompareScreen extends StatelessWidget {
             flex: 2,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: charts.BarChart(
-                series,
-                animate: true,
-                barGroupingType: charts.BarGroupingType.grouped,
-                vertical: true,
-                barRendererDecorator: charts.BarLabelDecorator<String>(),
-                domainAxis: const charts.OrdinalAxisSpec(),
-                primaryMeasureAxis: charts.PercentAxisSpec(),
+              child: BarChart(
+                BarChartData(
+                  barGroups: _buildBarGroups(data),
+                  titlesData: FlTitlesData(
+                    leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: true),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= data.length) return const SizedBox.shrink();
+                          return Text(data[index].bot, style: const TextStyle(fontSize: 10));
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  gridData: const FlGridData(show: true),
+                  borderData: FlBorderData(show: false),
+                  barTouchData: BarTouchData(enabled: true),
+                ),
               ),
             ),
           ),
@@ -90,8 +84,6 @@ class BotStatsCompareScreen extends StatelessWidget {
                 rows: data.map((d) {
                   final sign = d.delta >= 0 ? '+' : '';
                   final deltaStr = '$sign${d.delta.toStringAsFixed(1)}%';
-                  final deltaColor =
-                      d.delta > 0 ? Colors.green : (d.delta < 0 ? Colors.red : Colors.grey);
 
                   return DataRow(
                     cells: [
@@ -101,9 +93,9 @@ class BotStatsCompareScreen extends StatelessWidget {
                       DataCell(
                         Text(
                           deltaStr,
-                          style: TextStyle(
-                            color: deltaColor,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
                       ),
@@ -116,5 +108,29 @@ class BotStatsCompareScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<BarChartGroupData> _buildBarGroups(List<BotComparisonData> data) {
+    return List.generate(data.length, (i) {
+      final d = data[i];
+      return BarChartGroupData(
+        x: i,
+        barRods: [
+          BarChartRodData(
+            toY: d.run1Percent,
+            color: Colors.blue,
+            width: 8,
+            borderRadius: BorderRadius.zero,
+          ),
+          BarChartRodData(
+            toY: d.run2Percent,
+            color: Colors.red,
+            width: 8,
+            borderRadius: BorderRadius.zero,
+          ),
+        ],
+        barsSpace: 4,
+      );
+    });
   }
 }

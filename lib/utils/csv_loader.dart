@@ -7,7 +7,7 @@ Future<List<Map<String, int>>> loadCsvFiles(List<String> paths) async {
     final file = File(path);
     if (!file.existsSync()) continue;
     final content = await file.readAsString();
-    final rows = CsvToListConverter().convert(content);
+    final rows = const CsvToListConverter().convert(content);
     if (rows.isEmpty) continue;
 
     final headers = rows.first.cast<String>();

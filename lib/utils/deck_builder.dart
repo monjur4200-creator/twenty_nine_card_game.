@@ -19,10 +19,10 @@ class DeckBuilder {
   /// Each team can use one red (♥/♦) and one black (♠/♣) marker.
   static List<CardModel> generateMarkers() {
     return [
-      CardModel(rank: 6, suit: Suit.hearts),   // red marker
-      CardModel(rank: 6, suit: Suit.diamonds), // red marker
-      CardModel(rank: 6, suit: Suit.spades),   // black marker
-      CardModel(rank: 6, suit: Suit.clubs),    // black marker
+      const CardModel(rank: 6, suit: Suit.hearts),   // red marker
+      const CardModel(rank: 6, suit: Suit.diamonds), // red marker
+      const CardModel(rank: 6, suit: Suit.spades),   // black marker
+      const CardModel(rank: 6, suit: Suit.clubs),    // black marker
     ];
   }
 

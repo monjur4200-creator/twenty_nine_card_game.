@@ -1,27 +1,61 @@
-name: flutter_facebook_auth
-description: Facebook authentication plugin for Flutter
-version: 5.0.0
+name: twenty_nine_card_game
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_web_plugins:
-    sdk: flutter
+
+  # Platform & secure storage
+  flutter_facebook_auth_platform_interface: ^6.0.0
+  flutter_secure_storage: ^9.0.0
+
+  # Utilities
+  collection: ^1.18.0
+  file_picker: ^10.3.3
+  csv: ^6.0.0
+  fl_chart: ^0.66.0            # ✅ Migrated from charts_flutter_new
+  flutter_blue_plus: ^1.7.0
+
+  # Firebase
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+  firebase_database: ^11.1.4
+  firebase_auth: ^5.3.4
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+  # Multiplayer
+  flutter_bluetooth_serial: ^0.4.0
+  nearby_connections: ^4.3.0
+
+  # Unique IDs
+  uuid: ^4.4.0
+
+  # Social login
+  google_sign_in: ^6.1.6
+  flutter_facebook_auth: ^7.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  fake_cloud_firestore: ^3.0.2
+  firebase_auth_mocks: ^0.14.2
+  test: ^1.24.0
+  flutter_lints: ^3.0.0
+
+  # Mock generation
+  mockito: ^5.4.2
+  build_runner: ^2.4.6
 
 flutter:
-  plugin:
-    platforms:
-      android:
-        package: app.meedu.flutter_facebook_auth
-        pluginClass: FlutterFacebookAuthPlugin
-      ios:
-        pluginClass: FlutterFacebookAuthPlugin
-      web:
-        default_package: flutter_facebook_auth_web
+  uses-material-design: true
+  assets:
+    - assets/cards/
+    - assets/table/

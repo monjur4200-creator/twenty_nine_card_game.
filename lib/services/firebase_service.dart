@@ -10,8 +10,8 @@ class FirebaseService {
   /// In tests, pass fakes or mocks:
   ///   `FirebaseService(auth: fakeAuth, firestore: fakeFirestore)`
   FirebaseService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : auth = auth ?? FirebaseAuth.instance,
-      firestore = firestore ?? FirebaseFirestore.instance;
+      : auth = auth ?? FirebaseAuth.instance,
+        firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Sign in anonymously (useful for quick start or tests)
   Future<UserCredential?> signInAnonymously() async {

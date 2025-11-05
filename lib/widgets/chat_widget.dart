@@ -1,4 +1,3 @@
-// lib/widgets/chat_widget.dart
 import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
 
@@ -26,8 +25,16 @@ class ChatWidget extends StatefulWidget {
 
 class _ChatWidgetState extends State<ChatWidget> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
-  void _sendMessage() async {
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
@@ -51,6 +58,19 @@ class _ChatWidgetState extends State<ChatWidget> {
     }
 
     _controller.clear();
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
@@ -72,24 +92,54 @@ class _ChatWidgetState extends State<ChatWidget> {
           child: StreamBuilder<List<Map<String, dynamic>>>(
             stream: stream,
             builder: (context, snapshot) {
-              if (!snapshot.hasData) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text("No messages yet. Start the conversation!"),
+                );
+              }
+
               final messages = snapshot.data!;
               return ListView.builder(
+                controller: _scrollController,
                 reverse: true,
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
                   final msg = messages[index];
                   final name = (msg['senderName'] ?? 'Unknown') as String;
                   final text = (msg['text'] ?? '') as String;
+                  final isMe = msg['senderId'] == widget.userId;
 
-                  return ListTile(
-                    dense: true,
-                    title: Text(name, style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    )),
-                    subtitle: Text(text),
+                  return Align(
+                    alignment:
+                        isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isMe
+                            ? Colors.blue[200]
+                            : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!isMe)
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          Text(text),
+                        ],
+                      ),
+                    ),
                   );
                 },
               );
@@ -97,23 +147,26 @@ class _ChatWidgetState extends State<ChatWidget> {
           ),
         ),
         const Divider(height: 1),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  hintText: "Type a message...",
-                  border: InputBorder.none,
+        SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    hintText: "Type a message...",
+                    border: InputBorder.none,
+                  ),
+                  onSubmitted: (_) => _sendMessage(),
                 ),
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.send),
-              onPressed: _sendMessage,
-            ),
-          ],
+              IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: _sendMessage,
+              ),
+            ],
+          ),
         ),
       ],
     );

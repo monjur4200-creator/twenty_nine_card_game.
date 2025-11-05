@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twenty_nine_card_game/models/game_state.dart';
 import 'package:twenty_nine_card_game/models/player.dart';
-import 'package:twenty_nine_card_game/models/card.dart';
+import 'package:twenty_nine_card_game/models/card29.dart';
+import 'package:twenty_nine_card_game/models/login_method.dart';
+import 'package:twenty_nine_card_game/models/connection_type.dart';
 
 void main() {
   group('Stress test: multi-round randomized play', () {
@@ -11,7 +13,6 @@ void main() {
     late GameState gameState;
     final rng = Random(42);
 
-    // Build a reduced deck (J, 9, A, 10, K, Q of each suit)
     List<Card29> buildDeck() {
       const suits = [Suit.hearts, Suit.spades, Suit.clubs, Suit.diamonds];
       const ranks = [
@@ -58,7 +59,7 @@ void main() {
       final bids = <Player, int>{};
       for (final p in players) {
         if (rng.nextBool()) {
-          bids[p] = 16 + rng.nextInt(6); // 16–21
+          bids[p] = 16 + rng.nextInt(6);
         }
       }
       if (bids.isEmpty) {
@@ -75,10 +76,10 @@ void main() {
 
     setUp(() {
       players = [
-        Player(id: 1, name: 'Alice', teamId: 1),
-        Player(id: 2, name: 'Bob', teamId: 2),
-        Player(id: 3, name: 'Charlie', teamId: 1),
-        Player(id: 4, name: 'Dave', teamId: 2),
+        Player(id: 1, name: 'Alice', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 2, name: 'Bob', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 3, name: 'Charlie', teamId: 1, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
+        Player(id: 4, name: 'Dave', teamId: 2, loginMethod: LoginMethod.guest, connectionType: ConnectionType.local),
       ];
       gameState = GameState(players);
     });
@@ -90,24 +91,19 @@ void main() {
       Player dealer = players[0];
 
       for (int round = 1; round <= rounds; round++) {
-        // --- Bidding ---
         final bids = randomBids();
         gameState.conductBidding(bids);
         expect(gameState.highestBidder, isNotNull);
 
-        // --- Trump ---
         final trump = randomSuit();
         gameState.revealTrump(trump);
 
-        // --- Deal ---
         final deck = buildDeck();
         shuffle(deck);
         dealHands(deck, cardsPerPlayer);
 
-        // Dealer leads the first trick
         Player leader = dealer;
 
-        // --- Play all tricks ---
         for (int t = 0; t < cardsPerPlayer; t++) {
           final tricksBefore = players.fold<int>(
             0,
@@ -143,11 +139,9 @@ void main() {
           leader = winner!;
         }
 
-        // --- Update scores ---
         gameState.updateTeamScores();
         expect(gameState.teamScores.length, equals(2));
 
-        // ✅ Rule-based bidding outcome
         expect(gameState.highestBidder, isNotNull);
         final biddingTeam = gameState.highestBidder!.teamId;
         final biddingTarget = gameState.targetScore;
@@ -157,10 +151,9 @@ void main() {
           equals(biddingScore >= biddingTarget),
         );
 
-        // --- Print round summary ---
         final printLog = <String>[];
         final spec = ZoneSpecification(
-          print: (_, _, _, msg) {
+          print: (self, parent, zone, msg) {
             printLog.add(msg);
           },
         );
@@ -173,14 +166,12 @@ void main() {
           reason: 'Round $round summary should be printed',
         );
 
-        // --- Reset for next round ---
         gameState.startNewRound();
         expect(gameState.roundNumber, equals(round + 1));
 
         dealer = rightOf(dealer);
       }
 
-      // --- Final invariant after all rounds ---
       expect(gameState.roundNumber, equals(rounds + 1));
       expect(gameState.tricksHistory, isEmpty);
     });

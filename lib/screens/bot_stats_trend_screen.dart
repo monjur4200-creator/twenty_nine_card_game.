@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:fl_chart/fl_chart.dart';
 
 class BotTrendData {
   final int runIndex;
   final String bot;
   final int wins;
+
   BotTrendData(this.runIndex, this.bot, this.wins);
 }
 
@@ -13,7 +14,7 @@ class BotStatsTrendScreen extends StatelessWidget {
 
   const BotStatsTrendScreen({
     super.key,
-    required this.runs, // ✅ required parameter to initialize the field
+    required this.runs,
   });
 
   @override
@@ -26,34 +27,69 @@ class BotStatsTrendScreen extends StatelessWidget {
       });
     }
 
-    final series = <charts.Series<BotTrendData, int>>[];
-
-    final bots = runs.first.keys;
-    for (final bot in bots) {
-      series.add(
-        charts.Series<BotTrendData, int>(
-          id: bot,
-          colorFn: (_, _) => charts.MaterialPalette.blue.shadeDefault,
-          domainFn: (d, _) => d.runIndex,
-          measureFn: (d, _) => d.wins,
-          data: data.where((d) => d.bot == bot).toList(),
-        ),
-      );
-    }
+    final bots = runs.first.keys.toList();
+    final lines = _buildLineChartData(bots, data);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Bot Win Trends')),
+      appBar: AppBar(
+        title: const Text('Bot Win Trends'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: charts.LineChart(
-          series,
-          animate: true,
-          primaryMeasureAxis: const charts.NumericAxisSpec(),
-          domainAxis: const charts.NumericAxisSpec(
-            renderSpec: charts.SmallTickRendererSpec(),
+        child: LineChart(
+          LineChartData(
+            lineBarsData: lines,
+            titlesData: FlTitlesData(
+              leftTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: true),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    return Text('Run ${value.toInt()}');
+                  },
+                ),
+              ),
+              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            ),
+            gridData: const FlGridData(show: true),
+            borderData: FlBorderData(show: true),
+            lineTouchData: const LineTouchData(enabled: true),
           ),
         ),
       ),
     );
+  }
+
+  List<LineChartBarData> _buildLineChartData(
+    List<String> bots,
+    List<BotTrendData> data,
+  ) {
+    final colors = [
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.brown,
+    ];
+
+    return List.generate(bots.length, (i) {
+      final bot = bots[i];
+      final botData = data.where((d) => d.bot == bot).toList();
+
+      return LineChartBarData(
+        spots: botData
+            .map((d) => FlSpot(d.runIndex.toDouble(), d.wins.toDouble()))
+            .toList(),
+        isCurved: true,
+        barWidth: 3,
+        color: colors[i % colors.length],
+        dotData: const FlDotData(show: true),
+      );
+    });
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:twenty_nine_card_game/services/bot_ai.dart';
-import 'package:twenty_nine_card_game/models/card.dart' as model;
+import 'package:twenty_nine_card_game/models/card29.dart' as model;
 import 'package:twenty_nine_card_game/models/game_state.dart';
 import 'package:twenty_nine_card_game/models/player.dart';
+import 'package:twenty_nine_card_game/models/login_method.dart';
+import 'package:twenty_nine_card_game/models/connection_type.dart';
 
 void main() {
   group('BotAI stress tests', () {
@@ -10,32 +12,56 @@ void main() {
       for (int game = 0; game < 100; game++) {
         // Create four players with different personalities
         final players = [
-          Player(id: 1, name: 'AggroBot', teamId: 1),
-          Player(id: 2, name: 'CarefulBot', teamId: 1),
-          Player(id: 3, name: 'LogicBot', teamId: 2),
-          Player(id: 4, name: 'FallbackBot', teamId: 2),
+          Player(
+            id: 1,
+            name: 'AggroBot',
+            teamId: 1,
+            loginMethod: LoginMethod.guest,
+            connectionType: ConnectionType.local,
+          ),
+          Player(
+            id: 2,
+            name: 'CarefulBot',
+            teamId: 1,
+            loginMethod: LoginMethod.guest,
+            connectionType: ConnectionType.local,
+          ),
+          Player(
+            id: 3,
+            name: 'LogicBot',
+            teamId: 2,
+            loginMethod: LoginMethod.guest,
+            connectionType: ConnectionType.local,
+          ),
+          Player(
+            id: 4,
+            name: 'FallbackBot',
+            teamId: 2,
+            loginMethod: LoginMethod.guest,
+            connectionType: ConnectionType.local,
+          ),
         ];
 
         // Assign simple hands (3 cards each for stress test)
         players[0].setHandForTest([
-          model.Card29(model.Suit.spades, model.Rank.ace),
-          model.Card29(model.Suit.hearts, model.Rank.king),
-          model.Card29(model.Suit.clubs, model.Rank.seven),
+          const model.Card29(model.Suit.spades, model.Rank.ace),
+          const model.Card29(model.Suit.hearts, model.Rank.king),
+          const model.Card29(model.Suit.clubs, model.Rank.seven),
         ]);
         players[1].setHandForTest([
-          model.Card29(model.Suit.spades, model.Rank.seven),
-          model.Card29(model.Suit.hearts, model.Rank.seven),
-          model.Card29(model.Suit.clubs, model.Rank.king),
+          const model.Card29(model.Suit.spades, model.Rank.seven),
+          const model.Card29(model.Suit.hearts, model.Rank.seven),
+          const model.Card29(model.Suit.clubs, model.Rank.king),
         ]);
         players[2].setHandForTest([
-          model.Card29(model.Suit.diamonds, model.Rank.ace),
-          model.Card29(model.Suit.spades, model.Rank.king),
-          model.Card29(model.Suit.hearts, model.Rank.nine),
+          const model.Card29(model.Suit.diamonds, model.Rank.ace),
+          const model.Card29(model.Suit.spades, model.Rank.king),
+          const model.Card29(model.Suit.hearts, model.Rank.nine),
         ]);
         players[3].setHandForTest([
-          model.Card29(model.Suit.clubs, model.Rank.ace),
-          model.Card29(model.Suit.diamonds, model.Rank.king),
-          model.Card29(model.Suit.spades, model.Rank.nine),
+          const model.Card29(model.Suit.clubs, model.Rank.ace),
+          const model.Card29(model.Suit.diamonds, model.Rank.king),
+          const model.Card29(model.Suit.spades, model.Rank.nine),
         ]);
 
         final state = GameState(players, trump: model.Suit.spades);
